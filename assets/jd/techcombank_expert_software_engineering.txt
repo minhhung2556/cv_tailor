@@ -1,0 +1,72 @@
+About the job
+Job Purpose
+
+'The Expert, Software Engineering role within TechcomBank’s IT Division – Development Engineering function is responsible for providing deep technical expertise, leading complex software development projects, and driving innovation. Experts are expected to mentor both junior and senior engineers, contribute to system architecture, and implement best practices to ensure high-quality, scalable, and secure software solutions.
+
+Key Accountabilities (1)
+ Low-Level Architecture Design & Development
+ Contribute to low-level architecture design and develop software components that meet efficiency, scalability, and security standards.
+ Work closely with architects and senior engineers to optimize system design and implementation.
+ Technical Mentorship & Process Improvement
+ Guide Officer-level engineers, providing mentorship on best practices, coding standards, and development workflows.
+ Identify areas for process improvements and drive adoption of engineering best practices within the team.
+
+Key Accountabilities (2)
+'3. Code Quality & Optimization
+
+ Lead peer code reviews, enforce coding standards, and improve overall code maintainability.
+ Optimize software for performance, scalability, and security, ensuring high reliability in production environments.
+ Testing & Debugging
+ Conduct unit testing, integration testing, and contract testing to ensure software reliability.
+ Collaborate with QE teams to diagnose, troubleshoot, and resolve complex defects in a timely manner.
+ Promote test automation to improve software stability and release efficiency.
+
+Key Accountabilities (3)
+ Technical Documentation
+ Create and maintain clear, structured documentation, including:
+ API specifications
+ System design documents
+ Coding and architectural guidelines
+ Ensure documentation is regularly updated and aligned with system changes.
+
+Key Relationships - Direct Manager
+Head of Software Engineeing/ CTO/ Director, Software engineering
+
+Key Relationships - Direct Reports
+Staffs under team
+
+Key Relationships - Internal Stakeholders
+Division, units, branches/subsidiaries of TCB
+
+Key Relationships - External Stakeholders
+Application/solution provider partners, IT departments of key customer businesses
+
+Success Profile - Qualification and Experiences
+Qualifications
+
+ Bachelor's or Master's Degree in Computer Science, Software Engineering, Information Technology, or a related field.
+
+Work Experience
+
+ At least 5 years of experience in the engineering field.
+ At least 2 years in a Team lead position.
+ Proficiency in programming languages related to application development.
+Backend: Java
+Web: Typescript
+Mobile: Swift, Kotlin, Dart
+ Experience in managing technical teams and mediating in the work environment.
+ Experience in leading and managing system/software delivery.
+ Experience in both architecture and software design implementation.
+SOLID Principle
+Design Patterns
+Microservices architectures
+Observability (monitoring, logging, tracing)
+Compiling, Runtime deep understanding
+ Experience in advanced aspect of engineering field:
+High performanace, concurrency
+Security best practices
+Emerging technology
+
+Foreign Language
+
+ English as per the organization's regulations
