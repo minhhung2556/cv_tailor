@@ -1,0 +1,53 @@
+About the job
+VỀ ONE MOUNT One Mount được thành lập với tham vọng xây dựng hệ sinh thái công nghệ lớn nhất Việt Nam, cung cấp các giải pháp và dịch vụ xuyên suốt chuỗi giá trị từ lĩnh vực dịch vụ tài chính, phân phối, bất động sản và bán lẻ. Với thế mạnh về năng lực công nghệ và dữ liệu, One Mount là mảnh ghép quan trọng cùng Techcombank và Masterise Group xây dựng một hệ sinh thái đa chiều, mang đến nhiều giá trị cho khách hàng, đối tác và toàn thị trường.
+VỀ VỊ TRÍChúng tôi đang tìm Expert/Manager/Senior Manager, Software Engineer thực chiến. Ở vị trí này, bạn phát triển sản phẩm và sử dụng AI như một lực lượng thực thi chính: tập trung vào việc phân tích đề bài, định hình giải pháp và thiết kế hệ thống, sử dụng AI để tạo ra sản phẩm chất lượng. Đây là vai trò nhấn mạnh tư duy thiết kế và ra quyết định kỹ thuật, bạn sử dụng AI giúp hiện thực hóa nhanh hơn, chất lượng hơn.
+Đây là vị trí hướng đến trở thành một product builder tự chủ — một engineer vận hành gần như một đội nhỏ nhờ biết khai thác AI hiệu quả trong phát triển phần mềm. Chúng tôi không đặt nặng một ngôn ngữ cụ thể — quan trọng là bạn có nền tảng tư duy hệ thống vững, tư duy sản phẩm và khả năng dẫn dắt, kiểm chứng AI.
+VỀ CÔNG VIỆC
+Sở hữu việc xây dựng một sản phẩm hoặc luồng sản phẩm: định hình giải pháp, triển khai và bàn giao kết quả chạy được; phối hợp với Product Owner ở khâu yêu cầu và QC ở khâu kiểm thử.
+Sử dụng AI làm lực lượng thực thi chính trong phát triển phần mềm: biết khai thác AI hiệu quả, dẫn dắt và biết can thiệp, xử lý khi cần — bạn dẫn dắt, AI thực thi.
+Phân rã bài toán, điều phối và dẫn dắt các AI Coding Tools để tạo ra kết quả nhanh và chất lượng.
+Đọc, phản biện và kiểm chứng (verify) đầu ra của AI: đảm bảo tính đúng đắn, an toàn, hiệu năng và sự nhất quán về kiến trúc.
+Đảm bảo chất lượng đầu ra: thiết lập tiêu chí nghiệm thu và phối hợp với QC trong kiểm thử.
+Hiểu và giữ vững hệ thống: nắm kiến trúc tổng thể, nhận diện và xử lý technical debt, refactor khi cần.
+Chủ động khám phá và áp dụng các công cụ, kỹ thuật AI mới để nâng năng suất và chất lượng. 
+Phối hợp với Product Owner và các bên liên quan để thống nhất hướng giải pháp và ưu tiên.
+
+CHÚNG TÔI TÌM KIẾM
+Tư duy hệ thống và thiết kế: hiểu cách một hệ thống vận hành (data flow, dependency, điểm nghẽn, điểm gãy) và biết cách thiết kế hệ thống; đọc và nắm nhanh một codebase hoặc kiến trúc lạ.
+Tư duy sản phẩm: hiểu “tại sao” đằng sau mỗi yêu cầu, cân nhắc trade-off, và tự ra quyết định triển khai hợp lý khi yêu cầu chưa đủ chi tiết.
+Tư duy logic và giải quyết vấn đề: phân rã bài toán lớn thành các phần rõ ràng; nhận ra khi nào một kết quả “nghe có vẻ đúng” nhưng thực ra sai.
+Năng lực làm việc với AI: đã dùng AI Coding Tools thực tế để tạo ra kết quả chạy được; thành thạo ít nhất một công cụ và sẵn sàng dùng nhiều công cụ. Hiểu rõ cách khai thác AI hiệu quả trong phát triển phần mềm — cung cấp đúng ngữ cảnh (context), dẫn dắt và biết can thiệp, xử lý khi cần.
+Tinh thần thực chiến và tự chủ: sẵn sàng xắn tay vào làm; khi gặp vấn đề hoặc stack lạ thì tự tìm ra giải pháp (cùng AI) thay vì chờ được chỉ dẫn.
+Nền tảng kỹ thuật đủ để ra quyết định: nắm các khái niệm cốt lõi như API design, database (SQL/NoSQL), caching, messaging/queue, đồng bộ và bất đồng bộ — đủ để phản biện và kiểm chứng AI (không yêu cầu thuộc lòng cú pháp một ngôn ngữ cụ thể).
+Tự quản lý công việc: biết ưu tiên, ước lượng và giao tiếp tiến độ. (Không yêu cầu kinh nghiệm quản lý nhân sự.)
+
+YÊU CẦU VỊ TRÍ 
+Có khả năng tự phân tích yêu cầu và kiểm thử (bên cạnh việc phối hợp với PO và QC).
+Thành thạo ít nhất 1 ngôn ngữ lập trình (Java là điểm cộng) và có ít nhất 7 năm kinh nghiệm
+Microservices hoặc Modular Monolith, event-driven, cloud-native; SQL/NoSQL (MySQL, PostgreSQL, MongoDB); Redis, Kafka; Docker/Kubernetes.
+Kinh nghiệm với hệ thống high-performance, low-latency, real-time transactions.
+Hiểu biết về web và ứng dụng mobile.
+Quen các nền tảng AI-native: agentic workflow, MCP (Model Context Protocol), evals/guardrails.
+
+QUYỀN LỢI & CHẾ ĐỘ ĐÃI NGỘLương & Phụ cấpLương tháng 
+13 với thưởng hiệu suất hàng năm, thưởng dự án, thưởng doanh số (tùy theo vị trí)
+Phụ cấp ăn trưa: 730.000 VND/tháng
+Thưởng các dịp đặc biệt: 2.500.000 VND/năm
+Phép năm: Lên đến 20 ngày/năm (tùy theo cấp bậc)
+Y tế: Bảo hiểm xã hội, bảo hiểm cao cấp
+Được cấp laptop, màn hình và các thiết bị/tài khoản/công cụ cần thiết khác cho công việc
+
+Phát triển sự nghiệp
+Đánh giá tăng lương và thăng tiến hàng năm
+Lộ trình sự nghiệp đa dạng: Cơ hội quản lý hoặc chuyên gia và luân chuyển chức năng
+Nguồn học e-learning miễn phí trên các nền tảng Udemy, Coursera, O'reilly, workshop nội bộ, tài trợ chứng nhận và Cố vấn độc quyền (C-level)
+Được công nhận và khen thưởng ở cấp độ đội nhóm và tổ chức
+Cơ hội phát triển sự nghiệp rộng mở trong Hệ sinh thái Techcombank & Masterise Group
+Chương trình vay ưu đãi với lãi suất cạnh tranh và chính sách ân hạn gốc phù hợp với từng Sản phẩm vay.
+
+Môi trường làm việc
+Không gian làm việc mở và hợp tác thúc đẩy cả sự tập trung cá nhân và các hoạt động làm việc nhóm
+Môi trường, văn hóa làm việc sáng tạo, hiệu suất cao
+Khu vực thư giãn: chơi game, bóng bàn, yoga, phòng tập thể dục, phòng tắm.
+Teambuilding hàng quý/hàng năm và các sự kiện nội bộ hấp dẫn.
+Location: One Mount Building - Hà Nội & HCM

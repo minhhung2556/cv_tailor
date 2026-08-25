@@ -1,0 +1,55 @@
+About the job
+Binance is a leading global blockchain ecosystem behind the world’s largest cryptocurrency exchange by trading volume and registered users. We are trusted by 300+ million people in 100+ countries for our industry-leading security, user fund transparency, trading engine speed, deep liquidity, and an unmatched portfolio of digital-asset products. Binance offerings range from trading and finance to education, research, payments, institutional services, Web3 features, and more. We leverage the power of digital assets and blockchain to build an inclusive financial ecosystem to advance the freedom of money and improve financial access for people around the world.
+
+Responsibilities
+
+Design, develop, and maintain client-side applications for an instant messaging platform, with Android as the primary focus
+Build core messaging features: real-time chat, group chat, media messaging, message sync, offline messaging, push notifications
+Participate in client-side architecture design, ensuring consistent UX across Android, iOS, and Web
+Use AI-powered tools (Cursor, GitHub Copilot, ChatGPT, Claude, etc.) to support cross-stack frontend development — read, debug, and modify iOS/Web codebases
+Integrate RESTful APIs and WebSocket/MQTT/gRPC real-time communication protocols
+Handle local storage, offline-first experience, message state management, and cross-platform sync logic
+Optimize client performance: startup speed, memory, battery, network efficiency, UI responsiveness
+Collaborate with backend teams on API design, integration, and production issue investigation
+Senior level: mentor junior engineers, contribute to technical design decisions
+
+Requirements
+
+Bachelor's degree in Computer Science, Software Engineering, or a related discipline
+Engineer: 1-3+ years of experience; Senior Engineer: 3-5+ years
+Solid production experience in Android development (Kotlin and/or Java)
+Good understanding of Android SDK, Jetpack components, asynchronous programming, and modern client-side architecture
+Required: ability to use AI-powered development tools (Cursor, GitHub Copilot, ChatGPT, Claude, or similar) for cross-stack frontend development
+Able to read, understand, debug, and make reasonable changes in iOS or Web codebases with AI tool support
+Familiarity with WebSocket, MQTT, gRPC, or similar real-time communication protocols
+Understanding of messaging concepts: message delivery, read status, sync, local persistence, offline support, push notifications
+Good understanding of client-side performance optimization, memory management, multithreading, and security best practices
+Familiar with Git, CI/CD pipelines, automated testing, and Agile processes
+Strong debugging, problem-solving, ownership, and communication skills
+
+Preferred Qualifications
+
+Experience building IM products or communication platforms (WhatsApp, Telegram, WeChat, Discord, Slack, Messenger, etc.)
+iOS development experience (Swift, SwiftUI, Objective-C)
+Web frontend experience (TypeScript, React, Vue, Next.js)
+Cross-platform client or mobile full-stack development experience
+End-to-end encryption, message security, or cryptographic protocols experience
+Voice/video calling or RTC technologies experience
+Large-scale distributed messaging infrastructure experience
+Fintech, payments, or Web3 applications experience
+Open-source contributions or published apps on Google Play/App Store
+
+Why Binance
+
+ Shape the future with the world’s leading blockchain ecosystem
+ Collaborate with world-class talent in a user-centric global organization with a flat structure
+ Tackle unique, fast-paced projects with autonomy in an innovative environment
+ Thrive in a results-driven workplace with opportunities for career growth and continuous learning
+ Competitive salary and company benefits
+ Work-from-home arrangement (the arrangement may vary depending on the work nature of the business team)
+
+Binance is committed to being an equal opportunity employer. We believe that having a diverse workforce is fundamental to our success.
+
+By submitting a job application, you confirm that you have read and agree to our  Candidate Privacy Notice .
+
+We may use artificial intelligence (AI) tools to support parts of the hiring process, such as reviewing applications, analyzing resumes, or assessing responses and identifying potential inconsistencies or verification signals in application materials based on available information. These tools assist our recruitment team but do not replace human judgment. Final hiring decisions are ultimately made by humans. If you would like more information about how your data is processed, please contact us.
