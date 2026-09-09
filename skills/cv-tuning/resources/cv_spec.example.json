@@ -1,0 +1,74 @@
+{
+  "name": "LUONG DO MINH HUNG",
+  "title": "Software Engineering Manager / Product Lead (AI-Native & Systems Architecture)",
+  "contact": "minhhung2556@gmail.com · (+84) 775005110 · Ho Chi Minh City, Vietnam",
+  "sections": [
+    {
+      "heading": "Professional Summary",
+      "type": "text",
+      "content": "AI-native Software Engineering Lead and Product Builder with 12+ years of experience designing high-concurrency distributed systems, microservices, and multi-platform applications. Expert in system design, API design, and multi-language development across Java, Python, Dart/Flutter, and React/Node.js."
+    },
+    {
+      "heading": "Core Competencies",
+      "type": "bullets",
+      "items": [
+        "AI-Native Engineering & Agentic Workflows: Model Context Protocol (MCP), AI Guardrails & Evals, Prompt & Context Engineering, LLM Systems (Gemini, Claude, Ollama).",
+        "System Architecture & Design: Microservices, Event-Driven Architecture (Kafka, Redis), Low-Latency Transactions, API Design (OpenAPI, REST).",
+        "Product Leadership & Delivery: Autonomous End-to-End Product Building, Architecture Trade-off Analysis, Software Quality Assurance."
+      ]
+    },
+    {
+      "heading": "Experience",
+      "type": "experience",
+      "entries": [
+        {
+          "company": "EmbedIT Vietnam",
+          "location": "Ho Chi Minh City",
+          "role": "Mobile Technical Lead / Senior Software Engineer",
+          "dates": "April 2022 – Present",
+          "bullets": [
+            "Lead AI-native product builder for Home Credit digital payment features across Vietnam and the Philippines, operating with high autonomy from requirement analysis to verified code release.",
+            "Pioneered AI agent workflows and MCP tooling inside developer environments, reducing delivery cycle times by 40%.",
+            "Designed high-concurrency micro-services and mobile platform integrations for multi-country deployments."
+          ]
+        },
+        {
+          "company": "Home Credit Vietnam",
+          "location": "Ho Chi Minh City",
+          "role": "Mobile Technical Lead",
+          "dates": "December 2020 – April 2022",
+          "bullets": [
+            "Architected core high-volume digital payment streams across 4 markets (Vietnam, Philippines, Indonesia, India).",
+            "Led architectural refactoring that reduced mobile binary size by 20–50%, saving over €10,000 annually."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Technical Skills",
+      "type": "bullets",
+      "items": [
+        "Backend & Infrastructure: Java (Spring Boot), Python (FastAPI), Node.js, SQL/NoSQL, Redis, Kafka, Docker, Kubernetes, CI/CD.",
+        "Web & Mobile Platforms: Flutter, Dart, ReactJS, Next.js, Android, iOS, React Native, Mobile Security (OWASP MASVS)."
+      ]
+    },
+    {
+      "heading": "Education",
+      "type": "entries",
+      "entries": [
+        {
+          "title": "Tra Vinh University",
+          "subtitle": "Bachelor of Information Technology",
+          "dates": "2024 – 2026",
+          "details": ["Completed; graduation pending; GPA 3.7 / 4.0"]
+        },
+        {
+          "title": "Open University Ho Chi Minh City",
+          "subtitle": "Associate's Degree, Computer Science",
+          "dates": "2008 – 2011",
+          "details": ["Perfect score on Computer Graphics final exam"]
+        }
+      ]
+    }
+  ]
+}

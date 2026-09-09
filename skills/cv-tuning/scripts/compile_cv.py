@@ -23,8 +23,10 @@ def compile_cv(typ_path: str, output_path: str = None) -> str:
         out_p = Path(output_path)
         out_p.parent.mkdir(parents=True, exist_ok=True)
 
+    # Typst resolves template #import paths relative to --root. When the .typ lives
+    # in output/, the repo root is its grandparent; otherwise fall back to the cwd.
     root_dir = str(typ_file.resolve().parent.parent) if typ_file.resolve().parent.name == 'output' else str(Path.cwd())
-    cmd = ["typst", "compile", "--root", str(Path.cwd()), str(typ_file), output_path]
+    cmd = ["typst", "compile", "--root", root_dir, str(typ_file), output_path]
     res = subprocess.run(cmd, capture_output=True, text=True)
 
     if res.returncode != 0:
@@ -34,7 +36,7 @@ def compile_cv(typ_path: str, output_path: str = None) -> str:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python3 compile_cv.py <file.typ> [output_pdf_path]")
+        print("Usage: python compile_cv.py <file.typ> [output_pdf_path]")
         sys.exit(1)
 
     typ_path = sys.argv[1]

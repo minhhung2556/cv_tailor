@@ -6,7 +6,7 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
 
 # Volume root files
 .DocumentRevisions-V100
@@ -83,3 +83,14 @@ htmlcov/
 
 # pyenv
 # .python-version
+
+### cv_tuning project
+# Generated CV documents + personal tuned specs (regenerated from sources)
+output/*.pdf
+output/*.docx
+output/*.json
+output/bk/
+
+# Personal input CVs — contain personal data, do not commit
+/CTH.pdf
+/NTH_2026.docx

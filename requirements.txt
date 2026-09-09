@@ -1,0 +1,12 @@
+# cv-tuning skill — runtime dependencies
+beautifulsoup4>=4.12   # HTML job-description parsing (parse_jd.py)
+pypdf>=4.0             # PDF text extraction (pdf_utils.py -> parse_jd.py, extract_cv.py)
+python-docx>=1.1       # read .docx JDs and render Harvard-style .docx CVs (parse_jd.py, build_docx_cv.py)
+
+# Optional — PDF export WITHOUT the `typst` CLI (docx -> pdf, see docx_to_pdf.py):
+#   On Windows with Microsoft Word installed:
+# pywin32
+#   Or install LibreOffice and make sure `soffice` is on PATH.
+#
+# The original Typst route (compile_cv.py) instead requires the `typst` CLI,
+# which is not a pip package — install it separately if you prefer that path.
