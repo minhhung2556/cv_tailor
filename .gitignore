@@ -6,7 +6,7 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
 
 # Volume root files
 .DocumentRevisions-V100
@@ -84,4 +84,5 @@ htmlcov/
 # pyenv
 # .python-version
 assets/jd
+assets/cv_base.pdf
 output/
