@@ -30,7 +30,10 @@ def parse_jd(file_path: str) -> str:
                 chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
                 return '\n'.join(chunk for chunk in chunks if chunk)
         except Exception as e:
-            # Fallback to plain text read if BeautifulSoup fails
+            print(
+                f"Warning: HTML parse failed ({e}); reading raw file as text.",
+                file=sys.stderr,
+            )
             with open(path, 'r', encoding='utf-8', errors='ignore') as f:
                 return f.read()
 
