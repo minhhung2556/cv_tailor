@@ -83,3 +83,5 @@ htmlcov/
 
 # pyenv
 # .python-version
+assets/jd
+output/
