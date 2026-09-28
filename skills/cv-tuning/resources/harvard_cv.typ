@@ -1,10 +1,26 @@
 // Harvard-Style Resume Typst Template
 // Replicates the layout, typography, horizontal rules, and section formatting of assets/cv_base.pdf
 
+#let cv_bullet(body) = {
+  grid(
+    columns: (0.55em, 1fr),
+    column-gutter: 0.35em,
+    align: (left + top, left),
+    [•],
+    {
+      set par(justify: false, leading: 0.52em)
+      body
+    },
+  )
+  v(-2pt)
+}
+
+#let cv_url(url) = link(url)[#url]
+
 #let cv(
-  name: "LUONG DO MINH HUNG",
-  title: "Mobile Architect / Technical Lead",
-  contact: "minhhung2556@gmail.com · (+84) 775005110 · Ho Chi Minh City, Vietnam",
+  name: "",
+  title: "",
+  contact: "",
   body
 ) = {
   set page(
@@ -13,7 +29,7 @@
   )
   
   set text(
-    font: ("Times New Roman", "Liberation Serif", "Linux Libertine", "PT Serif", "Georgia", "serif"),
+    font: ("Times New Roman", "Georgia", "Libertinus Serif"),
     size: 9.5pt,
     lang: "en",
     fill: rgb("#111111"),
@@ -23,11 +39,17 @@
 
   // Header Section
   align(center)[
-    #text(17pt, weight: "bold")[#upper(name)] \
-    #v(-3pt)
-    #text(10.5pt, weight: "bold")[#title] \
-    #v(-2pt)
-    #text(8.5pt)[#contact]
+    #if name != "" [
+      #text(17pt, weight: "bold")[#upper(name)] \
+      #v(-3pt)
+    ]
+    #if title != "" [
+      #text(10.5pt, weight: "bold")[#title] \
+      #v(-2pt)
+    ]
+    #if contact != "" [
+      #text(8.5pt)[#contact]
+    ]
   ]
 
   v(4pt)
@@ -70,7 +92,7 @@
   }
   v(-2pt)
   for bullet in bullets {
-    [ - #bullet ]
+    cv_bullet(bullet)
   }
 }
 
@@ -90,6 +112,6 @@
   )
   v(-2pt)
   for detail in details {
-    [ - #detail ]
+    cv_bullet(detail)
   }
 }
