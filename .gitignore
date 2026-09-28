@@ -86,3 +86,4 @@ htmlcov/
 assets/jd
 assets/cv_base.pdf
 output/
+.agent/skills/cv-tuning
