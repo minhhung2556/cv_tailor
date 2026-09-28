@@ -4,10 +4,48 @@ parse_jd.py - Extracts plain text from Job Description (JD) files of various for
 HTML (.html, .htm), PDF (.pdf), Markdown (.md), Plain Text (.txt).
 """
 
-import sys
-import os
 import json
+import os
+import re
+import sys
 from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cv_io
+
+JD_EXTENSIONS = {".html", ".htm", ".pdf", ".md", ".txt"}
+STRIP_TAGS = ("script", "style", "noscript", "head", "nav", "footer")
+
+
+def _normalize_text(text: str) -> str:
+    lines = []
+    for line in text.splitlines():
+        collapsed = re.sub(r"\s+", " ", line).strip()
+        if collapsed:
+            lines.append(collapsed)
+    return "\n".join(lines)
+
+
+def _parse_html(path: Path) -> str:
+    try:
+        from bs4 import BeautifulSoup
+    except ImportError as e:
+        raise RuntimeError(
+            "HTML parsing requires beautifulsoup4. Install with: pip install beautifulsoup4"
+        ) from e
+
+    try:
+        soup = BeautifulSoup(cv_io.read_text_file(path), "html.parser")
+        for tag in soup.find_all(STRIP_TAGS):
+            tag.decompose()
+        text = soup.get_text(separator="\n")
+        return _normalize_text(text)
+    except Exception as e:
+        raise RuntimeError(f"Error parsing HTML file {path}: {e}") from e
+
 
 def parse_jd(file_path: str) -> str:
     path = Path(file_path)
@@ -15,46 +53,24 @@ def parse_jd(file_path: str) -> str:
         raise FileNotFoundError(f"JD file not found: {file_path}")
 
     ext = path.suffix.lower()
-    
-    if ext in ['.html', '.htm']:
-        try:
-            from bs4 import BeautifulSoup
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                soup = BeautifulSoup(f.read(), 'html.parser')
-                # Remove script and style elements
-                for script in soup(["script", "style", "head", "title", "meta", "[document]"]):
-                    script.extract()
-                text = soup.get_text(separator='\n')
-                # Clean up empty lines
-                lines = (line.strip() for line in text.splitlines())
-                chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-                return '\n'.join(chunk for chunk in chunks if chunk)
-        except Exception as e:
-            print(
-                f"Warning: HTML parse failed ({e}); reading raw file as text.",
-                file=sys.stderr,
-            )
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                return f.read()
+    if ext not in JD_EXTENSIONS:
+        raise ValueError(
+            f"Unsupported JD format '{ext}'. Use .html, .htm, .pdf, .md, or .txt."
+        )
 
-    elif ext == '.pdf':
-        try:
-            import pypdf
-            reader = pypdf.PdfReader(str(path))
-            text_pages = []
-            for i, page in enumerate(reader.pages):
-                text_pages.append(page.extract_text() or '')
-            return '\n\n'.join(text_pages)
-        except Exception as e:
-            raise RuntimeError(f"Error reading PDF file {file_path}: {e}")
+    if ext in (".html", ".htm"):
+        return _parse_html(path)
 
-    else: # .md, .txt or any text file
-        with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-            return f.read()
+    if ext == ".pdf":
+        return _normalize_text(cv_io.extract_pdf_text(path))
+
+    return _normalize_text(cv_io.read_text_file(path))
+
 
 def main():
+    cv_io.configure_utf8_stdout()
     if len(sys.argv) < 2:
-        print("Usage: python3 parse_jd.py <path_to_jd_file> [--json]")
+        print("Usage: python parse_jd.py <path_to_jd_file> [--json]")
         sys.exit(1)
 
     file_path = sys.argv[1]
@@ -63,16 +79,23 @@ def main():
     try:
         text = parse_jd(file_path)
         if as_json:
-            print(json.dumps({
-                "file_path": file_path,
-                "file_name": os.path.basename(file_path),
-                "text": text
-            }, ensure_ascii=False, indent=2))
+            print(
+                json.dumps(
+                    {
+                        "file_path": file_path,
+                        "file_name": os.path.basename(file_path),
+                        "text": text,
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
         else:
             print(text)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
