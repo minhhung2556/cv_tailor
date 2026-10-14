@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Ensure agent skill paths are directory junctions (Windows) or symlinks to skills/cv-tailor.
+Ensure agent skill paths are directory junctions (Windows) or symlinks to skills/*.
 
-Creates .agents/skills/cv-tailor (Cursor) and .claude/skills/cv-tailor (Claude Code).
+Creates .agents/skills/<name> (Cursor) and .claude/skills/<name> (Claude Code)
+for each skill directory under skills/ that contains SKILL.md.
 """
 
 from __future__ import annotations
@@ -18,10 +19,9 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cv_io
 
-CURSOR_AGENT_SKILL = Path(".agents/skills/cv-tailor")
-CLAUDE_AGENT_SKILL = Path(".claude/skills/cv-tailor")
-SKILL_SOURCE = Path("skills/cv-tailor")
-AGENT_SKILL_LINKS = (CURSOR_AGENT_SKILL, CLAUDE_AGENT_SKILL)
+SKILLS_DIR = Path("skills")
+CURSOR_SKILLS_ROOT = Path(".agents/skills")
+CLAUDE_SKILLS_ROOT = Path(".claude/skills")
 
 
 def _is_reparse_point(path: Path) -> bool:
@@ -97,6 +97,22 @@ def _ensure_skill_junction_at(
     return agent
 
 
+def discover_skill_names(repo_root: Path) -> list[str]:
+    skills_root = repo_root / SKILLS_DIR
+    if not skills_root.is_dir():
+        raise RuntimeError(f"Missing skills directory: {skills_root}")
+
+    names: list[str] = []
+    for child in sorted(skills_root.iterdir()):
+        if not child.is_dir():
+            continue
+        if (child / "SKILL.md").is_file():
+            names.append(child.name)
+    if not names:
+        raise RuntimeError(f"No skills with SKILL.md found under {skills_root}")
+    return names
+
+
 def ensure_agent_skill_junction(
     repo_root: Path | None = None,
     *,
@@ -105,13 +121,14 @@ def ensure_agent_skill_junction(
     if repo_root is None:
         repo_root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
 
-    skills = (repo_root / SKILL_SOURCE).resolve()
-    if not skills.is_dir():
-        raise RuntimeError(f"Missing skill source directory: {skills}")
-
     linked: list[Path] = []
-    for agent_rel in AGENT_SKILL_LINKS:
-        linked.append(_ensure_skill_junction_at(repo_root, agent_rel, skills, force=force))
+    for name in discover_skill_names(repo_root):
+        source = (repo_root / SKILLS_DIR / name).resolve()
+        if not source.is_dir():
+            raise RuntimeError(f"Missing skill source directory: {source}")
+        for agent_root in (CURSOR_SKILLS_ROOT, CLAUDE_SKILLS_ROOT):
+            agent_rel = agent_root / name
+            linked.append(_ensure_skill_junction_at(repo_root, agent_rel, source, force=force))
     return linked
 
 
@@ -124,9 +141,8 @@ def main() -> None:
     )
     args = parser.parse_args()
     root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
-    target = (root / SKILL_SOURCE).resolve()
     for path in ensure_agent_skill_junction(root, force=args.force):
-        print(f"Linked {path} -> {target}")
+        print(f"Linked {path} -> {path.resolve()}")
 
 
 if __name__ == "__main__":

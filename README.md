@@ -1,19 +1,26 @@
 # cv_tailor
 
-Tailor a base CV against a job description and compile a Harvard-style PDF. Put the base CV at `assets/cv_base.typ`. If that path is a PDF and a sibling `.typ` exists, extraction uses the Typst file. Put job descriptions in `assets/jd/`. The agent writes the PDF under `output/`. Agent steps live in [skills/cv-tailor/SKILL.md](skills/cv-tailor/SKILL.md).
+Tailor a base CV against a job description and compile a Harvard-style PDF. Put the base CV at `assets/cv_base.typ`. If that path is a PDF and a sibling `.typ` exists, extraction uses the Typst file. Put job descriptions in `assets/jd/`. The agent writes the PDF under `output/`. Agent workflows live under `skills/`:
+
+- [skills/cv-tailor/SKILL.md](skills/cv-tailor/SKILL.md): JD tailoring and PDF compile.
+- [skills/github-contributions/SKILL.md](skills/github-contributions/SKILL.md): sync GitHub repos into the base CV.
+- [skills/cv-section-audit/SKILL.md](skills/cv-section-audit/SKILL.md): hiring-manager pass on section structure before tailoring.
 
 ## Layout
 
 - `assets/cv_base.typ`: base CV. Gitignored.
 - `assets/jd/`: job descriptions (`.html`, `.htm`, `.txt`, `.pdf`, `.md`). Gitignored.
 - `output/`: compiled PDFs. Gitignored.
-- `skills/cv-tailor/`: skill instructions, scripts, and the Harvard Typst template.
-- `.agents/skills/cv-tailor`: junction to `skills/cv-tailor`, created after clone so Cursor loads the in-repo skill. Gitignored.
-- `.claude/skills/cv-tailor`: junction to `skills/cv-tailor`, for Claude Code. Gitignored.
+- `skills/cv-tailor/`: tailoring scripts and the Harvard Typst template.
+- `skills/github-contributions/`: `gh` CLI collectors and Typst merge helpers.
+- `skills/cv-section-audit/`: section-audit instructions (no scripts).
+- `.agents/skills/<name>` and `.claude/skills/<name>`: junctions to each skill above (`cv-tailor`, `github-contributions`, `cv-section-audit`). Gitignored. Recreated after clone (see Setup).
 
 
 
 ## Install
+
+A repo-level `npx skills add` (paths below without `skills/cv-tailor`) installs every skill under `skills/`. Installing only `skills/cv-tailor` brings in tailoring scripts, not `github-contributions` or `cv-section-audit`.
 
 Recommended for Cursor and Claude Code, installed globally from GitHub:
 
@@ -64,13 +71,13 @@ pip install -r requirements.txt
 
 `typst` must be on `PATH` (`typst compile`).
 
-After clone, recreate the Cursor and Claude Code skill junctions:
+After clone, recreate Cursor and Claude Code junctions for all skills (`cv-tailor`, `github-contributions`, `cv-section-audit`):
 
 ```powershell
 python skills/cv-tailor/scripts/link_agent_skill.py
 ```
 
-`--force` replaces a real directory at `.agents/skills/cv-tailor` or `.claude/skills/cv-tailor`. A junction is recreated without that flag.
+`--force` replaces a real directory at any agent skill path. A junction is recreated without that flag.
 
 ## Use
 
