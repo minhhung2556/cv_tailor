@@ -17,8 +17,22 @@ TEXT_EXTENSIONS = {".typ", ".md", ".txt"}
 CV_EXTENSIONS = TEXT_EXTENSIONS | {".pdf"}
 
 
+def _prefer_typ_over_pdf(path: Path) -> Path:
+    if path.suffix.lower() != ".pdf":
+        return path
+    sibling_typ = path.with_suffix(".typ")
+    if sibling_typ.is_file():
+        return sibling_typ
+    return path
+
+
 def extract_cv(file_path: str) -> str:
     path = Path(file_path)
+    if not path.is_absolute():
+        repo_root = cv_io.find_repo_root(_SCRIPT_DIR)
+        path = cv_io.resolve_repo_path(repo_root, file_path)
+    path = _prefer_typ_over_pdf(path)
+
     if not path.exists():
         raise FileNotFoundError(f"Base CV file not found: {file_path}")
 
@@ -34,10 +48,19 @@ def extract_cv(file_path: str) -> str:
     return cv_io.extract_pdf_text(path, page_markers=True)
 
 
+def default_cv_path() -> str:
+    repo_root = cv_io.find_repo_root(_SCRIPT_DIR)
+    return str(cv_io.resolve_repo_path(repo_root, str(cv_io.DEFAULT_BASE_CV)))
+
+
 def main():
     cv_io.configure_utf8_stdout()
-    cv_path = sys.argv[1] if len(sys.argv) > 1 else "assets/cv_base.typ"
-    as_json = "--json" in sys.argv
+    cv_path, as_json = cv_io.parse_cli_path_and_json(
+        sys.argv, default_path=default_cv_path()
+    )
+    if not cv_path:
+        print("Usage: python extract_cv.py [path_to_cv] [--json]")
+        sys.exit(1)
 
     try:
         text = extract_cv(cv_path)

@@ -17,7 +17,8 @@ if str(_SCRIPT_DIR) not in sys.path:
 import cv_io
 
 JD_EXTENSIONS = {".html", ".htm", ".pdf", ".md", ".txt"}
-STRIP_TAGS = ("script", "style", "noscript", "head", "nav", "footer")
+STRIP_TAGS = ("script", "style", "noscript", "nav", "footer")
+HEAD_STRIP_TAGS = ("script", "style", "noscript")
 
 
 def _normalize_text(text: str) -> str:
@@ -39,12 +40,22 @@ def _parse_html(path: Path) -> str:
 
     try:
         soup = BeautifulSoup(cv_io.read_text_file(path), "html.parser")
+        title_text = ""
+        if soup.title and soup.title.string:
+            title_text = re.sub(r"\s+", " ", soup.title.string).strip()
+        head = soup.find("head")
+        if head:
+            for tag in head.find_all(HEAD_STRIP_TAGS):
+                tag.decompose()
+            head.decompose()
         for tag in soup.find_all(STRIP_TAGS):
             tag.decompose()
-        text = soup.get_text(separator="\n")
-        return _normalize_text(text)
-    except Exception as e:
-        raise RuntimeError(f"Error parsing HTML file {path}: {e}") from e
+        body_text = soup.get_text(separator="\n")
+        if title_text and title_text not in body_text:
+            body_text = f"{title_text}\n{body_text}"
+        return _normalize_text(body_text)
+    except OSError as e:
+        raise RuntimeError(f"Error reading HTML file {path}: {e}") from e
 
 
 def parse_jd(file_path: str) -> str:
@@ -69,12 +80,10 @@ def parse_jd(file_path: str) -> str:
 
 def main():
     cv_io.configure_utf8_stdout()
-    if len(sys.argv) < 2:
+    file_path, as_json = cv_io.parse_cli_path_and_json(sys.argv)
+    if not file_path:
         print("Usage: python parse_jd.py <path_to_jd_file> [--json]")
         sys.exit(1)
-
-    file_path = sys.argv[1]
-    as_json = "--json" in sys.argv
 
     try:
         text = parse_jd(file_path)
