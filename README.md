@@ -98,3 +98,7 @@ Scripts run from the workspace root, under `skills/cv-tailor/scripts/`:
 python -m unittest discover -s tests
 ```
 
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
