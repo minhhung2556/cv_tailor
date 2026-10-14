@@ -21,26 +21,25 @@ Load this skill whenever the user asks to:
 
 ### Step 1: Detect and Parse Job Description(s)
 Check `assets/jd/` for target JD files (supported extensions: `.html`, `.htm`, `.txt`, `.pdf`, `.md`).
-The parser keeps job text inside HTML `<header>` and removes nav, footer, scripts, and styles. Unsupported extensions raise an error instead of being read as plain text.
+The parser keeps HTML `<header>` and document `<title>` text, and removes nav, footer, scripts, and styles. Unsupported extensions raise an error instead of being read as plain text.
 Run the parser script to extract clean text:
 ```bash
 python skills/cv-tuning/scripts/parse_jd.py "assets/jd/<jd_file>" --json
 ```
 
 ### Step 2: Read Base CV and personal evidence
-Extract the full candidate history and details from `assets/cv_base.typ` (preferred) or `assets/cv_base.pdf`:
+Extract the full candidate history from the base CV path (default `assets/cv_base.typ`; `extract_cv.py` prefers a sibling `.typ` when you pass `.pdf`):
 ```bash
-python skills/cv-tuning/scripts/extract_cv.py "assets/cv_base.typ"
+python skills/cv-tuning/scripts/extract_cv.py "assets/cv_base.typ" --json
 ```
 
-After extraction, read each **personal product and profile URL** listed under Reference Links in the base CV (at minimum `https://hooemi.com` and `https://romanticdeveloper.com`). Treat verified facts from those pages as additional evidence alongside the base CV. Do not invent dates, metrics, or scope not stated in the base CV or those pages.
+Use only facts from that extract plus verified content from URLs listed under **Reference Links** in the extract. Do not invent dates, metrics, or scope. Prefer `.typ` over `.pdf` for extraction: PDF text order is lossy for multi-column layouts.
 
 ### Step 3: Analyze Requirements & Map Accomplishments
 0. **Evidence inventory** (before tailoring):
-   - List every employer, founder or independent product, credential, and named skill from the base CV plus verified personal-site facts.
-   - The tuned CV must retain each item. Reorder and rephrase for the JD; do not drop an evidenced employer, product, credential, or skill category to save space.
-   - If a product appears only as a URL in Reference Links but the candidate built it (e.g. Hooemi), include a short **Experience** or **Projects** entry with truthful bullets from public product pages.
-   - If an item must be omitted (e.g. page limit), name it in the Step 6 report with reason.
+   - List every employer, founder or independent product, credential, and named skill from the extract plus verified facts from Reference Link pages.
+   - The tuned CV must retain each item. Reorder and rephrase for the JD; do not drop an evidenced employer, product, credential, or skill category.
+   - If a product appears only as a URL in Reference Links, include a short **Experience** or **Projects** entry with truthful bullets from those linked pages.
 
 1. **Identify Target Parameters**:
    - Role Title & Level (e.g. Senior Flutter Engineer, Mobile Architect)
@@ -66,7 +65,7 @@ Governs Professional Summary, Core Competencies, and experience bullets only. Do
 
 **Truth and structure**
 
-- Facts only from the base CV. Reframe order and emphasis. Do not invent scope, titles, or metrics.
+- Facts only from the extract and verified Reference Link pages. Reframe order and emphasis. Do not invent scope, titles, or metrics.
 - One claim per bullet. Lead with a verb and a concrete result (what shipped, what changed, a number only if the base CV has one).
 
 **Plain prose (no dash pauses)**
@@ -93,31 +92,31 @@ Create a `.typ` file under `output/` (or another writable path). Use an absolute
 #import "/skills/cv-tuning/resources/harvard_cv.typ": cv, cv_section, cv_experience, cv_entry, cv_url
 
 #show: cv.with(
-  name: "LUONG DO MINH HUNG",
+  name: "<NAME_FROM_EXTRACT>",
   title: "<TARGET_ROLE_TITLE>",
-  contact: "minhhung2556@gmail.com · (+84) 775005110 · Ho Chi Minh City, Vietnam",
+  contact: "<CONTACT_FROM_EXTRACT>",
 )
 
 #cv_section("Professional Summary")
-<Tuned Professional Summary text tailored to the JD requirements...>
+<Tuned summary from extract, aligned to JD...>
 
 #cv_section("Core Competencies")
-<Tuned Core Competencies bullet list or inline categories...>
+<Tuned competencies from extract...>
 
 #cv_section("Experience")
+<One #cv_experience(...) per employer/product in the extract; tuned bullets only, same entries as extract>
 
-#cv_experience(
-  company: "EmbedIT Vietnam (EmbedIT s.r.o., Czech Republic)",
-  location: "Ho Chi Minh City",
-  role: "Mobile Technical Lead / Senior Software Engineer",
-  dates: "April 2022 – Present",
-  bullets: (
-    [<Tuned bullet point emphasizing JD responsibilities...>],
-    [<Tuned bullet point...>],
-  )
-)
+#cv_section("Selected Credentials and Speaking")
+<One #cv_entry(...) per credential in the extract>
 
-// Add remaining experience entries, Credentials, Reference Links, Technical Skills, and Education...
+#cv_section("Reference Links")
+<URLs from extract, same links as base CV>
+
+#cv_section("Technical Skills")
+<Skill categories from extract, reordered for JD>
+
+#cv_section("Education")
+<One #cv_entry(...) per education line in the extract>
 ```
 
 ### Step 5: Compile PDF to Output Directory
@@ -132,7 +131,8 @@ python skills/cv-tuning/scripts/compile_cv.py "output/tuned_cv.typ" "output/CV_<
 ```bash
 python skills/cv-tuning/scripts/link_agent_skill.py
 ```
+Use `--force` only to replace a real directory at that path (not a junction).
 
 ### Step 6: Verify and Report Output
 1. Check that the PDF was written successfully to `output/` and note the page count printed by `compile_cv.py`.
-2. Report the generated file location to the user, summarize key adjustments made to match the target JD, include the JD keyword lists (used vs skipped), and list any evidenced employers, products, credentials, or skills omitted from the tuned CV (with reason).
+2. Report the generated file location to the user, summarize key adjustments made to match the target JD, and include the JD keyword lists (used vs skipped). Confirm every employer, product, credential, skill category, and education entry from the extract appears in the tuned CV.
