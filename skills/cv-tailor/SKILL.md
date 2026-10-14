@@ -35,11 +35,11 @@ Extract the full candidate history from the base CV path (default `assets/cv_bas
 python <skill-scripts>/extract_cv.py "assets/cv_base.typ" --json
 ```
 
-Use only facts from that extract plus verified content from URLs listed under **Reference Links** in the extract. Do not invent dates, metrics, or scope. Prefer `.typ` over `.pdf` for extraction: PDF text order is lossy for multi-column layouts.
+Use only facts from that extract, from `assets/github_contributions.json` when present (GitHub repo metadata and authored-commit counts from [github-contributions](../github-contributions/SKILL.md)), plus verified content from URLs listed under **Reference Links** in the extract. Do not invent dates, metrics, or scope. Prefer `.typ` over `.pdf` for extraction: PDF text order is lossy for multi-column layouts.
 
 ### Step 3: Analyze Requirements & Map Accomplishments
 0. **Evidence inventory** (before tailoring):
-   - List every employer, founder or independent product, credential, and named skill from the extract plus verified facts from Reference Link pages.
+   - List every employer, founder or independent product, credential, and named skill from the extract, from `assets/github_contributions.json` when present, plus verified facts from Reference Link pages.
    - The tuned CV must retain each item. Reorder and rephrase for the JD; do not drop an evidenced employer, product, credential, or skill category.
    - If a product appears only as a URL in Reference Links, include a short **Experience** or **Projects** entry with truthful bullets from those linked pages.
 
@@ -60,6 +60,8 @@ Use only facts from that extract plus verified content from URLs listed under **
    - **Core Competencies**: Highlight key domains and principles matching the JD.
    - **Experience**: Reorder and reframe bullet points under each employer to prioritize relevant projects, metrics, and accomplishments matching the target JD. *Do not fabricate unverified experience.*
    - **Technical Skills**: Rearrange skill categories so the target technology stack is featured first.
+
+Before rewriting a base CV whose bullets mix product with libraries, or whose summary, competencies, and skills repeat the same claim, follow [cv-section-audit](../cv-section-audit/SKILL.md). Tailoring still uses only facts from the extract.
 
 ### Writing (CV prose)
 
@@ -131,6 +133,8 @@ python <skill-scripts>/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate
 
 ### Install and agent discovery
 
+This repository ships three agent skills under `skills/`: `cv-tailor`, `github-contributions`, and `cv-section-audit`. Repo-level install commands below add all of them. `./skills/cv-tailor` installs only this skill.
+
 Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
@@ -151,9 +155,9 @@ npx skills add git@github.com:minhhung2556/cv_tailor.git -a cursor -g -y
 npx skills add https://github.com/minhhung2556/cv_tailor/tree/main/skills/cv-tailor -a claude-code -g -y
 ```
 
-Omit `-g` to install into the current project (`.agents/skills/cv-tailor` for Cursor, `.claude/skills/cv-tailor` for Claude Code). Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
+Omit `-g` to install into the current project (`.agents/skills/<name>` for Cursor, `.claude/skills/<name>` for Claude Code). Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
 
-**Cursor:** import `https://github.com/minhhung2556/cv_tailor` in Cursor Plugins to load this skill from the repository marketplace manifest.
+**Cursor:** import `https://github.com/minhhung2556/cv_tailor` in Cursor Plugins to load every skill from the repository marketplace manifest (`skills` in [.cursor-plugin/plugin.json](../../.cursor-plugin/plugin.json)).
 
 **Claude Code:** register the marketplace, then install the plugin:
 ```text
@@ -161,11 +165,11 @@ Omit `-g` to install into the current project (`.agents/skills/cv-tailor` for Cu
 /plugin install cv-tailor@cv-tailor
 ```
 
-In this repository, `.agents/skills/cv-tailor` and `.claude/skills/cv-tailor` are junctions to `skills/cv-tailor` (not second copies). After clone, recreate them with:
+In this repository, `.agents/skills/<name>` and `.claude/skills/<name>` are junctions to `skills/<name>` for each skill (not second copies). After clone, recreate them with:
 ```bash
 python skills/cv-tailor/scripts/link_agent_skill.py
 ```
-Use `--force` only to replace a real directory at those paths (not a junction).
+Use `--force` only to replace a real directory at an agent skill path (not a junction).
 
 ### Step 6: Verify and Report Output
 1. Check that the PDF exists at the path printed by `compile_cv.py` (typically under `output/` when you passed that path) and note the page count.

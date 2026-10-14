@@ -227,7 +227,7 @@ class CompileCvTests(unittest.TestCase):
 
 
 class AgentSkillLinkTests(unittest.TestCase):
-    def _minimal_repo(self, tmp: Path) -> Path:
+    def _minimal_repo(self, tmp: Path, *, extra_skills: tuple[str, ...] = ()) -> Path:
         root = tmp / "repo"
         (root / "skills" / "cv-tailor" / "resources").mkdir(parents=True)
         (root / "skills" / "cv-tailor" / "resources" / "harvard_cv.typ").write_text(
@@ -235,6 +235,14 @@ class AgentSkillLinkTests(unittest.TestCase):
             encoding="utf-8",
         )
         (root / "skills" / "cv-tailor" / "scripts").mkdir(parents=True, exist_ok=True)
+        (root / "skills" / "cv-tailor" / "SKILL.md").write_text(
+            "---\nname: cv-tailor\n---\n",
+            encoding="utf-8",
+        )
+        for name in extra_skills:
+            skill_dir = root / "skills" / name
+            skill_dir.mkdir(parents=True, exist_ok=True)
+            (skill_dir / "SKILL.md").write_text(f"---\nname: {name}\n---\n", encoding="utf-8")
         return root
 
     def test_real_directory_without_force_raises(self):
@@ -277,6 +285,18 @@ class AgentSkillLinkTests(unittest.TestCase):
             link_agent_skill.ensure_agent_skill_junction(root)
             self.assertTrue((agent / "resources" / "marker.txt").is_file())
 
+    def test_extra_skill_gets_both_agent_links(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._minimal_repo(Path(tmp), extra_skills=("github-contributions",))
+            link_agent_skill.ensure_agent_skill_junction(root)
+            gh_source = (root / "skills" / "github-contributions").resolve()
+            for rel in (
+                ".agents/skills/github-contributions",
+                ".claude/skills/github-contributions",
+            ):
+                agent = root / rel
+                self.assertTrue(agent.exists())
+                self.assertEqual(agent.resolve(), gh_source)
 
 class InstalledSkillWorkspaceTests(unittest.TestCase):
     def test_parse_jd_resolves_relative_path_from_separate_workspace(self):
