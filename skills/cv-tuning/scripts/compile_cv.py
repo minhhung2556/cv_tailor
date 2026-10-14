@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-compile_cv.py - Compiles a Typst CV file (.typ) into a PDF inside the output/ directory.
+compile_cv.py - Compiles a Typst CV file (.typ) into a PDF.
+When output_path is omitted, the PDF is written beside the source with the same name.
 """
 
 import subprocess
@@ -21,36 +22,32 @@ def pdf_page_count(pdf_path: str) -> int:
     if not path.is_file():
         raise FileNotFoundError(f"PDF not found: {pdf_path}")
     try:
-        import pypdf
-    except ImportError as e:
-        raise RuntimeError(cv_io.PYPDF_INSTALL_MSG) from e
-    try:
-        return len(pypdf.PdfReader(str(path)).pages)
+        return len(cv_io._pdf_reader(path).pages)
     except Exception as e:
         raise RuntimeError(f"Could not read PDF page count for {pdf_path}: {e}") from e
 
 
 def compile_cv(typ_path: str, output_path: str | None = None) -> str:
-    repo_root = cv_io.find_repo_root(Path(__file__).resolve().parent)
-    typ_file = cv_io.resolve_repo_path(repo_root, typ_path)
+    workspace = cv_io.find_workspace_root()
+    skill_root = cv_io.find_skill_root(_SCRIPT_DIR)
+    typ_file = cv_io.resolve_workspace_path(workspace, typ_path)
     if not typ_file.exists():
         raise FileNotFoundError(f"Typst source file not found: {typ_path}")
 
     if not output_path:
-        output_dir = repo_root / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        pdf_name = typ_file.stem + ".pdf"
-        output_path = str(output_dir / pdf_name)
+        output_path = str(typ_file.with_suffix(".pdf"))
     else:
-        out_p = cv_io.resolve_repo_path(repo_root, output_path)
+        out_p = cv_io.resolve_workspace_path(workspace, output_path)
         out_p.parent.mkdir(parents=True, exist_ok=True)
         output_path = str(out_p)
+
+    cv_io.stage_harvard_template_next_to(typ_file, skill_root)
 
     cmd = [
         "typst",
         "compile",
         "--root",
-        str(repo_root),
+        str(workspace),
         str(typ_file),
         output_path,
     ]
