@@ -9,35 +9,52 @@ Tailor a base CV against a job description and compile a Harvard-style PDF. Put 
 - `output/`: compiled PDFs. Gitignored.
 - `skills/cv-tuning/`: skill instructions, scripts, and the Harvard Typst template.
 - `.agents/skills/cv-tuning`: junction to `skills/cv-tuning`, created after clone so Cursor loads the in-repo skill. Gitignored.
+- `.claude/skills/cv-tuning`: junction to `skills/cv-tuning`, for Claude Code. Gitignored.
 
 
 
 ## Install
 
-Recommended for Cursor, installed globally from GitHub:
+Recommended for Cursor and Claude Code, installed globally from GitHub:
+
+```powershell
+npx skills add minhhung2556/cv_tuning -a cursor -a claude-code -g -y
+```
+
+For one agent only:
 
 ```powershell
 npx skills add minhhung2556/cv_tuning -a cursor -g -y
+npx skills add minhhung2556/cv_tuning -a claude-code -g -y
 ```
 
 From a local clone, pass that repository path. Use an absolute path, `.`, or `..`. A bare folder name is treated as a GitHub repository, not a local directory.
 
 ```powershell
-npx skills add E:\projects\cv_tuning -a cursor -g -y
-npx skills add . -a cursor -g -y
-npx skills add .\skills\cv-tuning -a cursor -g -y
+npx skills add E:\projects\cv_tuning -a cursor -a claude-code -g -y
+npx skills add . -a claude-code -g -y
+npx skills add .\skills\cv-tuning -a claude-code -g -y
 ```
 
 The same CLI accepts an HTTPS URL or an SSH URL:
 
 ```powershell
-npx skills add https://github.com/minhhung2556/cv_tuning.git -a cursor -g -y
-npx skills add git@github.com:minhhung2556/cv_tuning.git -a cursor -g -y
+npx skills add https://github.com/minhhung2556/cv_tuning.git -a claude-code -g -y
+npx skills add git@github.com:minhhung2556/cv_tuning.git -a claude-code -g -y
 ```
 
-Omit `-g` to install into the current project's `.agents/skills/`. Private repositories use git credentials already configured for that URL. If Windows refuses the symlink, add `--copy`.
+Omit `-g` to install into the current project (`.agents/skills/` for Cursor, `.claude/skills/` for Claude Code). Private repositories use git credentials already configured for that URL. If Windows refuses the symlink, add `--copy`.
 
-Import `https://github.com/minhhung2556/cv_tuning` from Cursor Customize, Plugins. The manifest is [.cursor-plugin/marketplace.json](.cursor-plugin/marketplace.json).
+**Cursor:** import `https://github.com/minhhung2556/cv_tuning` from Cursor Customize, Plugins. The manifest is [.cursor-plugin/marketplace.json](.cursor-plugin/marketplace.json).
+
+**Claude Code:** in a Claude Code session:
+
+```text
+/plugin marketplace add minhhung2556/cv_tuning
+/plugin install cv-tuning@cv-tuning
+```
+
+From a local clone: `/plugin marketplace add E:\projects\cv_tuning` (or your path). Catalog file: [.claude-plugin/marketplace.json](.claude-plugin/marketplace.json).
 
 ## Setup in this repo
 
@@ -47,13 +64,13 @@ pip install -r requirements.txt
 
 `typst` must be on `PATH` (`typst compile`).
 
-After clone, recreate the agent skill junction:
+After clone, recreate the Cursor and Claude Code skill junctions:
 
 ```powershell
 python skills/cv-tuning/scripts/link_agent_skill.py
 ```
 
-`--force` replaces a real directory at `.agents/skills/cv-tuning`. A junction is recreated without that flag.
+`--force` replaces a real directory at `.agents/skills/cv-tuning` or `.claude/skills/cv-tuning`. A junction is recreated without that flag.
 
 ## Use
 
