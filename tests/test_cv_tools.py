@@ -250,12 +250,11 @@ class AgentSkillLinkTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._minimal_repo(Path(tmp))
             link_agent_skill.ensure_agent_skill_junction(root)
-            agent = root / ".agents" / "skills" / "cv-tuning"
-            self.assertTrue(agent.exists())
-            self.assertEqual(
-                agent.resolve(),
-                (root / "skills" / "cv-tuning").resolve(),
-            )
+            skills = (root / "skills" / "cv-tuning").resolve()
+            for rel in (".agents/skills/cv-tuning", ".claude/skills/cv-tuning"):
+                agent = root / rel
+                self.assertTrue(agent.exists())
+                self.assertEqual(agent.resolve(), skills)
 
     def test_reparse_point_replaced(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -345,6 +344,30 @@ class CursorPluginManifestTests(unittest.TestCase):
 
         skill_text = self.SKILL_MD.read_text(encoding="utf-8")
         self.assertIn("name: cv-tuning", skill_text.split("---", 2)[1])
+
+
+class ClaudePluginManifestTests(unittest.TestCase):
+    PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
+    MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
+    SKILL_MD = SKILLS / "SKILL.md"
+
+    def test_plugin_and_marketplace_manifests(self):
+        plugin = json.loads(self.PLUGIN_JSON.read_text(encoding="utf-8"))
+        marketplace = json.loads(self.MARKETPLACE_JSON.read_text(encoding="utf-8"))
+
+        self.assertEqual(plugin["name"], "cv-tuning")
+        self.assertIn("description", plugin)
+
+        self.assertEqual(marketplace["name"], "cv-tuning")
+        self.assertIn("name", marketplace["owner"])
+        self.assertGreaterEqual(len(marketplace["plugins"]), 1)
+        entry = marketplace["plugins"][0]
+        self.assertEqual(entry["name"], plugin["name"])
+        self.assertEqual(entry["source"], ".")
+
+        skill_text = self.SKILL_MD.read_text(encoding="utf-8")
+        self.assertIn("claude-code", skill_text)
+        self.assertIn("/plugin marketplace add", skill_text)
 
 
 if __name__ == "__main__":
