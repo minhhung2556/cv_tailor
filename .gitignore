@@ -83,7 +83,6 @@ htmlcov/
 
 # pyenv
 # .python-version
-assets/jd
-assets/cv_base.pdf
+assets/
 output/
 .agent/skills/cv-tuning
