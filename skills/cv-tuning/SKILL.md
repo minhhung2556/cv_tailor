@@ -7,6 +7,8 @@ description: Tune and tailor candidate CVs against Job Descriptions (JD) in asse
 
 This skill automates the process of tailoring a candidate's base resume (`assets/cv_base.typ`, or `assets/cv_base.pdf` when present) to match specific Job Description (JD) requirements found in `assets/jd/`, generating a clean, Harvard-style PDF in `output/`.
 
+**Paths:** CV and JD files live in the **workspace** (the project you are tuning, usually the repo root with `assets/` and `output/`). Scripts live under this skill directory (`SKILL.md` and `scripts/`). Run them with the workspace as the shell working directory. Use the path to `scripts/parse_jd.py` (and siblings) from wherever this skill is installed, for example `skills/cv-tuning/scripts/` in this repo or `.agents/skills/cv-tuning/scripts/` after `npx skills add`.
+
 ## When to load this skill
 
 Load this skill whenever the user asks to:
@@ -22,15 +24,15 @@ Load this skill whenever the user asks to:
 ### Step 1: Detect and Parse Job Description(s)
 Check `assets/jd/` for target JD files (supported extensions: `.html`, `.htm`, `.txt`, `.pdf`, `.md`).
 The parser keeps HTML `<header>` and document `<title>` text, and removes nav, footer, scripts, and styles. Unsupported extensions raise an error instead of being read as plain text.
-Run the parser script to extract clean text:
+Run the parser script to extract clean text (replace `<skill-scripts>` with this skill's `scripts/` directory):
 ```bash
-python skills/cv-tuning/scripts/parse_jd.py "assets/jd/<jd_file>" --json
+python <skill-scripts>/parse_jd.py "assets/jd/<jd_file>" --json
 ```
 
 ### Step 2: Read Base CV and personal evidence
 Extract the full candidate history from the base CV path (default `assets/cv_base.typ`; `extract_cv.py` prefers a sibling `.typ` when you pass `.pdf`):
 ```bash
-python skills/cv-tuning/scripts/extract_cv.py "assets/cv_base.typ" --json
+python <skill-scripts>/extract_cv.py "assets/cv_base.typ" --json
 ```
 
 Use only facts from that extract plus verified content from URLs listed under **Reference Links** in the extract. Do not invent dates, metrics, or scope. Prefer `.typ` over `.pdf` for extraction: PDF text order is lossy for multi-column layouts.
@@ -86,10 +88,10 @@ Governs Professional Summary, Core Competencies, and experience bullets only. Do
 - Keep dashes only in code, stack names, string literals, regex, Unicode escapes, and verbatim quotations.
 
 ### Step 4: Write Harvard-Style Typst Document
-Create a `.typ` file under `output/` (or another writable path). Use an absolute import from the repo root. `compile_cv.py` sets `--root` to the repo, so this path works from `output/`:
+Create a `.typ` file under `output/` (or another writable path). Import the Harvard template by filename; `compile_cv.py` copies `harvard_cv.typ` next to your source and sets Typst `--root` to the workspace:
 
 ```typst
-#import "/skills/cv-tuning/resources/harvard_cv.typ": cv, cv_section, cv_experience, cv_entry, cv_url
+#import "harvard_cv.typ": cv, cv_section, cv_experience, cv_entry, cv_url
 
 #show: cv.with(
   name: "<NAME_FROM_EXTRACT>",
@@ -120,19 +122,44 @@ Create a `.typ` file under `output/` (or another writable path). Use an absolute
 ```
 
 ### Step 5: Compile PDF to Output Directory
-Relative paths passed to `compile_cv.py` (Typst source and output PDF) are resolved from the repository root, not the shell working directory.
-Run `compile_cv.py` to compile the `.typ` file into PDF inside `output/`:
+Relative paths passed to `compile_cv.py` (Typst source and output PDF) are resolved from the workspace root, not only the shell working directory.
+If you omit the PDF path, `compile_cv.py` writes `<source>.pdf` beside the `.typ` file.
+Run `compile_cv.py` with an explicit destination for the tuned CV:
 ```bash
-python skills/cv-tuning/scripts/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate_Name>_<Company>_<Role>.pdf"
+python <skill-scripts>/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate_Name>_<Company>_<Role>.pdf"
 ```
 
-### Agent skill path
-`.agent/skills/cv-tuning` is a junction to `skills/cv-tuning` (not a second copy). After clone, recreate it with:
+### Install and agent discovery
+
+Install globally for Cursor (GitHub shorthand):
+```bash
+npx skills add minhhung2556/cv_tuning -a cursor -g -y
+```
+
+From a local clone, pass the repository path. Use an absolute path, `.`, or `..`. A bare folder name is treated as a GitHub repository, not a local directory.
+```bash
+npx skills add /path/to/cv_tuning -a cursor -g -y
+npx skills add . -a cursor -g -y
+npx skills add ./skills/cv-tuning -a cursor -g -y
+```
+
+From a git URL:
+```bash
+npx skills add https://github.com/minhhung2556/cv_tuning.git -a cursor -g -y
+npx skills add git@github.com:minhhung2556/cv_tuning.git -a cursor -g -y
+npx skills add https://github.com/minhhung2556/cv_tuning/tree/main/skills/cv-tuning -a cursor -g -y
+```
+
+Omit `-g` to install into the current project's `.agents/skills/cv-tuning`. Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
+
+Import `https://github.com/minhhung2556/cv_tuning` in Cursor Plugins to load this skill from the repository marketplace manifest.
+
+In this repository, `.agents/skills/cv-tuning` is a junction to `skills/cv-tuning` (not a second copy). After clone, recreate it with:
 ```bash
 python skills/cv-tuning/scripts/link_agent_skill.py
 ```
 Use `--force` only to replace a real directory at that path (not a junction).
 
 ### Step 6: Verify and Report Output
-1. Check that the PDF was written successfully to `output/` and note the page count printed by `compile_cv.py`.
+1. Check that the PDF exists at the path printed by `compile_cv.py` (typically under `output/` when you passed that path) and note the page count.
 2. Report the generated file location to the user, summarize key adjustments made to match the target JD, and include the JD keyword lists (used vs skipped). Confirm every employer, product, credential, skill category, and education entry from the extract appears in the tuned CV.

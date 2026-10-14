@@ -85,4 +85,4 @@ htmlcov/
 # .python-version
 assets/
 output/
-.agent/skills/cv-tuning
+.agents/skills/cv-tuning

@@ -4,7 +4,6 @@ parse_jd.py - Extracts plain text from Job Description (JD) files of various for
 HTML (.html, .htm), PDF (.pdf), Markdown (.md), Plain Text (.txt).
 """
 
-import json
 import os
 import re
 import sys
@@ -59,7 +58,7 @@ def _parse_html(path: Path) -> str:
 
 
 def parse_jd(file_path: str) -> str:
-    path = Path(file_path)
+    path = cv_io.resolve_user_path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"JD file not found: {file_path}")
 
@@ -79,31 +78,12 @@ def parse_jd(file_path: str) -> str:
 
 
 def main():
-    cv_io.configure_utf8_stdout()
-    file_path, as_json = cv_io.parse_cli_path_and_json(sys.argv)
-    if not file_path:
-        print("Usage: python parse_jd.py <path_to_jd_file> [--json]")
-        sys.exit(1)
-
-    try:
-        text = parse_jd(file_path)
-        if as_json:
-            print(
-                json.dumps(
-                    {
-                        "file_path": file_path,
-                        "file_name": os.path.basename(file_path),
-                        "text": text,
-                    },
-                    ensure_ascii=False,
-                    indent=2,
-                )
-            )
-        else:
-            print(text)
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+    cv_io.run_text_cli(
+        sys.argv,
+        usage="Usage: python parse_jd.py <path_to_jd_file> [--json]",
+        read_text=parse_jd,
+        extra_fields=lambda path: {"file_name": os.path.basename(path)},
+    )
 
 
 if __name__ == "__main__":

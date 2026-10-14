@@ -1,0 +1,7 @@
+{
+  "name": "cv-tuning",
+  "displayName": "CV Tuning",
+  "description": "Tailor a base CV against job descriptions and compile Harvard-style PDFs.",
+  "repository": "https://github.com/minhhung2556/cv_tuning",
+  "skills": "skills"
+}

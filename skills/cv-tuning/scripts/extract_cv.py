@@ -3,7 +3,6 @@
 extract_cv.py - Extracts text content from base CV files (PDF, Typst, Markdown, plain text).
 """
 
-import json
 import sys
 from pathlib import Path
 
@@ -27,11 +26,7 @@ def _prefer_typ_over_pdf(path: Path) -> Path:
 
 
 def extract_cv(file_path: str) -> str:
-    path = Path(file_path)
-    if not path.is_absolute():
-        repo_root = cv_io.find_repo_root(_SCRIPT_DIR)
-        path = cv_io.resolve_repo_path(repo_root, file_path)
-    path = _prefer_typ_over_pdf(path)
+    path = _prefer_typ_over_pdf(cv_io.resolve_user_path(file_path))
 
     if not path.exists():
         raise FileNotFoundError(f"Base CV file not found: {file_path}")
@@ -49,34 +44,16 @@ def extract_cv(file_path: str) -> str:
 
 
 def default_cv_path() -> str:
-    repo_root = cv_io.find_repo_root(_SCRIPT_DIR)
-    return str(cv_io.resolve_repo_path(repo_root, str(cv_io.DEFAULT_BASE_CV)))
+    return str(cv_io.resolve_user_path(str(cv_io.DEFAULT_BASE_CV)))
 
 
 def main():
-    cv_io.configure_utf8_stdout()
-    cv_path, as_json = cv_io.parse_cli_path_and_json(
-        sys.argv, default_path=default_cv_path()
+    cv_io.run_text_cli(
+        sys.argv,
+        usage="Usage: python extract_cv.py [path_to_cv] [--json]",
+        read_text=extract_cv,
+        default_path=default_cv_path(),
     )
-    if not cv_path:
-        print("Usage: python extract_cv.py [path_to_cv] [--json]")
-        sys.exit(1)
-
-    try:
-        text = extract_cv(cv_path)
-        if as_json:
-            print(
-                json.dumps(
-                    {"file_path": cv_path, "text": text},
-                    ensure_ascii=False,
-                    indent=2,
-                )
-            )
-        else:
-            print(text)
-    except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
 
 
 if __name__ == "__main__":
