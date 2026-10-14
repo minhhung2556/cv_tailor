@@ -7,7 +7,7 @@ description: Tune and tailor candidate CVs against Job Descriptions (JD) in asse
 
 This skill automates the process of tailoring a candidate's base resume (`assets/cv_base.typ`, or `assets/cv_base.pdf` when present) to match specific Job Description (JD) requirements found in `assets/jd/`, generating a clean, Harvard-style PDF in `output/`.
 
-**Paths:** CV and JD files live in the **workspace** (the project you are tuning, usually the repo root with `assets/` and `output/`). Scripts live under this skill directory (`SKILL.md` and `scripts/`). Run them with the workspace as the shell working directory. Use the path to `scripts/parse_jd.py` (and siblings) from wherever this skill is installed, for example `skills/cv-tuning/scripts/` in this repo or `.agents/skills/cv-tuning/scripts/` after `npx skills add`.
+**Paths:** CV and JD files live in the **workspace** (the project you are tuning, usually the repo root with `assets/` and `output/`). Scripts live under this skill directory (`SKILL.md` and `scripts/`). Run them with the workspace as the shell working directory. Use the path to `scripts/parse_jd.py` (and siblings) from wherever this skill is installed, for example `skills/cv-tuning/scripts/` in this repo, `.agents/skills/cv-tuning/scripts/` after Cursor install, or `.claude/skills/cv-tuning/scripts/` after Claude Code install.
 
 ## When to load this skill
 
@@ -131,34 +131,41 @@ python <skill-scripts>/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate
 
 ### Install and agent discovery
 
-Install globally for Cursor (GitHub shorthand):
+Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash
-npx skills add minhhung2556/cv_tuning -a cursor -g -y
+npx skills add minhhung2556/cv_tuning -a cursor -a claude-code -g -y
+npx skills add minhhung2556/cv_tuning -a claude-code -g -y
 ```
 
 From a local clone, pass the repository path. Use an absolute path, `.`, or `..`. A bare folder name is treated as a GitHub repository, not a local directory.
 ```bash
-npx skills add /path/to/cv_tuning -a cursor -g -y
-npx skills add . -a cursor -g -y
-npx skills add ./skills/cv-tuning -a cursor -g -y
+npx skills add /path/to/cv_tuning -a claude-code -g -y
+npx skills add . -a cursor -a claude-code -g -y
+npx skills add ./skills/cv-tuning -a claude-code -g -y
 ```
 
 From a git URL:
 ```bash
-npx skills add https://github.com/minhhung2556/cv_tuning.git -a cursor -g -y
+npx skills add https://github.com/minhhung2556/cv_tuning.git -a claude-code -g -y
 npx skills add git@github.com:minhhung2556/cv_tuning.git -a cursor -g -y
-npx skills add https://github.com/minhhung2556/cv_tuning/tree/main/skills/cv-tuning -a cursor -g -y
+npx skills add https://github.com/minhhung2556/cv_tuning/tree/main/skills/cv-tuning -a claude-code -g -y
 ```
 
-Omit `-g` to install into the current project's `.agents/skills/cv-tuning`. Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
+Omit `-g` to install into the current project (`.agents/skills/cv-tuning` for Cursor, `.claude/skills/cv-tuning` for Claude Code). Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
 
-Import `https://github.com/minhhung2556/cv_tuning` in Cursor Plugins to load this skill from the repository marketplace manifest.
+**Cursor:** import `https://github.com/minhhung2556/cv_tuning` in Cursor Plugins to load this skill from the repository marketplace manifest.
 
-In this repository, `.agents/skills/cv-tuning` is a junction to `skills/cv-tuning` (not a second copy). After clone, recreate it with:
+**Claude Code:** register the marketplace, then install the plugin:
+```text
+/plugin marketplace add minhhung2556/cv_tuning
+/plugin install cv-tuning@cv-tuning
+```
+
+In this repository, `.agents/skills/cv-tuning` and `.claude/skills/cv-tuning` are junctions to `skills/cv-tuning` (not second copies). After clone, recreate them with:
 ```bash
 python skills/cv-tuning/scripts/link_agent_skill.py
 ```
-Use `--force` only to replace a real directory at that path (not a junction).
+Use `--force` only to replace a real directory at those paths (not a junction).
 
 ### Step 6: Verify and Report Output
 1. Check that the PDF exists at the path printed by `compile_cv.py` (typically under `output/` when you passed that path) and note the page count.
