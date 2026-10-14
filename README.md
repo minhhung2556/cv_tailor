@@ -9,7 +9,7 @@ Tailor a base CV against a job description and compile a Harvard-style PDF. Put 
 ## Layout
 
 - `assets/cv_base.typ`: base CV. Gitignored.
-- `assets/jd/`: job descriptions (`.html`, `.htm`, `.txt`, `.pdf`, `.md`). Gitignored.
+- `assets/jd/`: job descriptions (`.html`, `.htm`, `.txt`, `.pdf`, `.md`, `.docx`). Gitignored.
 - `output/`: compiled PDFs. Gitignored.
 - `skills/cv-tailor/`: tailoring scripts and the Harvard Typst template.
 - `skills/github-contributions/`: `gh` CLI collectors and Typst merge helpers.
@@ -69,7 +69,7 @@ From a local clone: `/plugin marketplace add E:\projects\cv_tailor` (or your pat
 pip install -r requirements.txt
 ```
 
-`typst` must be on `PATH` (`typst compile`).
+`typst` must be on `PATH` (`typst compile`) for the Typst PDF route. For Word output or PDF without Typst, use `build_docx_cv.py` and optionally `docx_to_pdf.py` (see [skills/cv-tailor/SKILL.md](skills/cv-tailor/SKILL.md) Step 5-ALT).
 
 After clone, recreate Cursor and Claude Code junctions for all skills (`cv-tailor`, `github-contributions`, `cv-section-audit`):
 
@@ -89,6 +89,8 @@ Scripts run from the workspace root, under `skills/cv-tailor/scripts/`:
 - `parse_jd.py`: plain text from a job description. Optional `--json`.
 - `extract_cv.py`: text from the base CV. Defaults to `assets/cv_base.typ`. Optional `--json`.
 - `compile_cv.py`: compiles a `.typ` file to PDF and prints the page count. It copies `harvard_cv.typ` next to the source. If you omit the PDF path, the PDF is written beside the `.typ` file with the same name.
+- `build_docx_cv.py`: Harvard-style `.docx` from a JSON spec (`resources/cv_spec.example.json`).
+- `docx_to_pdf.py`: PDF from `.docx` via MS Word or LibreOffice (no Typst).
 
 
 

@@ -1,0 +1,75 @@
+{
+  "name": "JANE Q. CANDIDATE",
+  "title": "Senior Software Engineer (Example Role Title)",
+  "contact": "jane.candidate@example.com · (+1) 555-0100 · Example City, EX",
+  "sections": [
+    {
+      "heading": "Professional Summary",
+      "type": "text",
+      "content": "Example summary paragraph. Replace with tuned prose from the base CV extract. Keep one short paragraph that matches the target job description without inventing facts."
+    },
+    {
+      "heading": "Core Competencies",
+      "type": "bullets",
+      "items": [
+        "Example competency line one: domain or principle aligned to the JD.",
+        "Example competency line two: tools or methods the candidate can evidence.",
+        "Example competency line three: delivery or leadership theme from the extract."
+      ]
+    },
+    {
+      "heading": "Experience",
+      "type": "experience",
+      "entries": [
+        {
+          "company": "Acme Example Corp",
+          "location": "Example City",
+          "role": "Senior Engineer",
+          "dates": "January 2022 – Present",
+          "bullets": [
+            "Example bullet: verb plus outcome drawn only from the base CV.",
+            "Example bullet: metric or scope only if present in the extract.",
+            "Example bullet: technology or project name from verified history."
+          ]
+        },
+        {
+          "company": "Prior Employer LLC",
+          "location": "Remote",
+          "role": "Software Engineer",
+          "dates": "June 2018 – December 2021",
+          "bullets": [
+            "Example bullet for a second employer entry.",
+            "Example bullet showing reordering for JD fit, not new claims."
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "Technical Skills",
+      "type": "bullets",
+      "items": [
+        "Languages and runtimes: list from extract, JD keywords first where evidenced.",
+        "Platforms and tools: example category line two.",
+        "Practices: testing, CI/CD, or architecture themes from the base CV only."
+      ]
+    },
+    {
+      "heading": "Education",
+      "type": "entries",
+      "entries": [
+        {
+          "title": "Example State University",
+          "subtitle": "B.S. Computer Science",
+          "dates": "2014 – 2018",
+          "details": ["Example detail line from extract, e.g. honors or focus area"]
+        },
+        {
+          "title": "Example Community College",
+          "subtitle": "A.A. General Studies",
+          "dates": "2012 – 2014",
+          "details": ["Optional second education entry"]
+        }
+      ]
+    }
+  ]
+}
