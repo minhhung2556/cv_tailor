@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Ensure .agent/skills/cv-tuning is a directory junction (Windows) or symlink to skills/cv-tuning.
+Ensure .agents/skills/cv-tuning is a directory junction (Windows) or symlink to skills/cv-tuning.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cv_io
 
-AGENT_SKILL = Path(".agent/skills/cv-tuning")
+AGENT_SKILL = Path(".agents/skills/cv-tuning")
 SKILL_SOURCE = Path("skills/cv-tuning")
 
 
@@ -49,7 +49,7 @@ def ensure_agent_skill_junction(
     force: bool = False,
 ) -> Path:
     if repo_root is None:
-        repo_root = cv_io.find_repo_root(Path(__file__).resolve().parent)
+        repo_root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
 
     agent = repo_root / AGENT_SKILL
     skills = (repo_root / SKILL_SOURCE).resolve()
@@ -105,7 +105,7 @@ def main() -> None:
         help="Delete a real directory at the agent skill path before linking",
     )
     args = parser.parse_args()
-    root = cv_io.find_repo_root(Path(__file__).resolve().parent)
+    root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
     path = ensure_agent_skill_junction(root, force=args.force)
     print(f"Linked {path} -> {(root / SKILL_SOURCE).resolve()}")
 
