@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Ensure agent skill paths are directory junctions (Windows) or symlinks to skills/cv-tuning.
+Ensure agent skill paths are directory junctions (Windows) or symlinks to skills/cv-tailor.
 
-Creates .agents/skills/cv-tuning (Cursor) and .claude/skills/cv-tuning (Claude Code).
+Creates .agents/skills/cv-tailor (Cursor) and .claude/skills/cv-tailor (Claude Code).
 """
 
 from __future__ import annotations
@@ -18,9 +18,9 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cv_io
 
-CURSOR_AGENT_SKILL = Path(".agents/skills/cv-tuning")
-CLAUDE_AGENT_SKILL = Path(".claude/skills/cv-tuning")
-SKILL_SOURCE = Path("skills/cv-tuning")
+CURSOR_AGENT_SKILL = Path(".agents/skills/cv-tailor")
+CLAUDE_AGENT_SKILL = Path(".claude/skills/cv-tailor")
+SKILL_SOURCE = Path("skills/cv-tailor")
 AGENT_SKILL_LINKS = (CURSOR_AGENT_SKILL, CLAUDE_AGENT_SKILL)
 
 
