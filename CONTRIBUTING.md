@@ -38,3 +38,5 @@ python -m unittest discover -s tests
 
 1. Open a PR against `main` with a clear description of what changed and why.
 2. Confirm tests pass locally (CI runs the same unittest suite on pull requests).
+
+`main` and `develop` are protected: changes must go through a pull request, CI (`unittest` on Python 3.12 and 3.14) must pass, and conversation threads must be resolved. Force pushes and branch deletion are disabled.
