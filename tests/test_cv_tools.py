@@ -46,6 +46,18 @@ extract_cv = _load_module("extract_cv", SCRIPTS / "extract_cv.py")
 compile_cv = _load_module("compile_cv", SCRIPTS / "compile_cv.py")
 link_agent_skill = _load_module("link_agent_skill", SCRIPTS / "link_agent_skill.py")
 cv_io = _load_module("cv_io", SCRIPTS / "cv_io.py")
+build_docx_cv = _load_module("build_docx_cv", SCRIPTS / "build_docx_cv.py")
+docx_to_pdf = _load_module("docx_to_pdf", SCRIPTS / "docx_to_pdf.py")
+
+
+def _write_minimal_docx(path: Path, paragraph: str) -> None:
+    try:
+        from docx import Document
+    except ImportError:
+        raise unittest.SkipTest("python-docx not installed")
+    doc = Document()
+    doc.add_paragraph(paragraph)
+    doc.save(str(path))
 
 
 class ParseJdTests(unittest.TestCase):
@@ -96,10 +108,38 @@ class ParseJdTests(unittest.TestCase):
 
     def test_unsupported_extension_raises(self):
         with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / "jd.docx"
+            path = Path(tmp) / "jd.xyz"
             path.write_bytes(b"fake")
             with self.assertRaises(ValueError):
                 parse_jd.parse_jd(str(path))
+
+    def test_legacy_doc_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "jd.doc"
+            path.write_bytes(b"\xd0\xcf\x11\xe0")
+            with self.assertRaises(RuntimeError) as ctx:
+                parse_jd.parse_jd(str(path))
+            self.assertIn(".doc", str(ctx.exception))
+            self.assertIn("not supported", str(ctx.exception).lower())
+
+    def test_docx_extracts_paragraph_text(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "jd.docx"
+            _write_minimal_docx(path, "Senior Backend Engineer role")
+            text = parse_jd.parse_jd(str(path))
+        self.assertIn("Senior Backend Engineer role", text)
+
+    def test_docx_cli_json_shape(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "jd.docx"
+            _write_minimal_docx(path, "hello from docx")
+            buf = io.StringIO()
+            with mock.patch.object(sys, "argv", ["parse_jd.py", str(path), "--json"]):
+                with mock.patch.object(sys, "stdout", buf):
+                    parse_jd.main()
+        payload = json.loads(buf.getvalue())
+        self.assertEqual(payload["file_name"], "jd.docx")
+        self.assertIn("hello from docx", payload["text"])
 
     def test_markdown_collapses_whitespace(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -107,6 +147,61 @@ class ParseJdTests(unittest.TestCase):
             path.write_text("Role   title\n\nSecond  line\n", encoding="utf-8")
             text = parse_jd.parse_jd(str(path))
         self.assertEqual(text, "Role title\nSecond line")
+
+
+class BuildDocxCvTests(unittest.TestCase):
+    def test_build_writes_name_and_bullet(self):
+        try:
+            from docx import Document
+        except ImportError:
+            self.skipTest("python-docx not installed")
+
+        spec = {
+            "name": "Jane Candidate",
+            "title": "Engineer",
+            "contact": "jane@example.com",
+            "sections": [
+                {
+                    "heading": "Core Competencies",
+                    "type": "bullets",
+                    "items": ["Shipped the payment API"],
+                },
+                {
+                    "heading": "Experience",
+                    "type": "experience",
+                    "entries": [
+                        {
+                            "company": "Acme",
+                            "location": "Remote",
+                            "role": "Senior Engineer",
+                            "dates": "2020 – Present",
+                            "bullets": ["Led the platform migration"],
+                        }
+                    ],
+                },
+            ],
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp) / "cv.docx"
+            build_docx_cv.build(spec, str(out))
+            self.assertTrue(out.is_file())
+            doc = Document(str(out))
+            full_text = "\n".join(p.text for p in doc.paragraphs)
+            self.assertIn("JANE CANDIDATE", full_text)
+            self.assertIn("Shipped the payment API", full_text)
+
+
+class DocxToPdfTests(unittest.TestCase):
+    def test_no_converter_raises(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            docx_path = Path(tmp) / "in.docx"
+            _write_minimal_docx(docx_path, "x")
+            pdf_path = Path(tmp) / "out.pdf"
+            with mock.patch.object(docx_to_pdf, "_convert_with_word", return_value=False):
+                with mock.patch.object(docx_to_pdf, "_convert_with_libreoffice", return_value=False):
+                    with self.assertRaises(RuntimeError) as ctx:
+                        docx_to_pdf.docx_to_pdf(str(docx_path), str(pdf_path))
+            self.assertIn("converter", str(ctx.exception).lower())
 
 
 class ExtractCvTests(unittest.TestCase):
