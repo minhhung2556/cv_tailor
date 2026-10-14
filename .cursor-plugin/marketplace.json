@@ -1,8 +1,8 @@
 {
-  "name": "cv-tuning",
+  "name": "cv-tailor",
   "plugins": [
     {
-      "name": "cv-tuning",
+      "name": "cv-tailor",
       "source": ".",
       "description": "Tailor a base CV against job descriptions and compile Harvard-style PDFs."
     }

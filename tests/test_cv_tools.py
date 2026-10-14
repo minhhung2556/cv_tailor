@@ -8,8 +8,8 @@ from pathlib import Path
 from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SKILLS = REPO_ROOT / "skills" / "cv-tuning"
-AGENT_SKILLS = REPO_ROOT / ".agents" / "skills" / "cv-tuning"
+SKILLS = REPO_ROOT / "skills" / "cv-tailor"
+AGENT_SKILLS = REPO_ROOT / ".agents" / "skills" / "cv-tailor"
 SCRIPTS = SKILLS / "scripts"
 HARVARD = SKILLS / "resources" / "harvard_cv.typ"
 
@@ -174,10 +174,10 @@ class CompileCvTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
             repo = base / "repo"
-            scripts = repo / "skills" / "cv-tuning" / "scripts"
+            scripts = repo / "skills" / "cv-tailor" / "scripts"
             scripts.mkdir(parents=True)
-            (repo / "skills" / "cv-tuning" / "resources").mkdir(parents=True)
-            (repo / "skills" / "cv-tuning" / "resources" / "harvard_cv.typ").write_text(
+            (repo / "skills" / "cv-tailor" / "resources").mkdir(parents=True)
+            (repo / "skills" / "cv-tailor" / "resources" / "harvard_cv.typ").write_text(
                 HARVARD.read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
@@ -229,18 +229,18 @@ class CompileCvTests(unittest.TestCase):
 class AgentSkillLinkTests(unittest.TestCase):
     def _minimal_repo(self, tmp: Path) -> Path:
         root = tmp / "repo"
-        (root / "skills" / "cv-tuning" / "resources").mkdir(parents=True)
-        (root / "skills" / "cv-tuning" / "resources" / "harvard_cv.typ").write_text(
+        (root / "skills" / "cv-tailor" / "resources").mkdir(parents=True)
+        (root / "skills" / "cv-tailor" / "resources" / "harvard_cv.typ").write_text(
             HARVARD.read_text(encoding="utf-8"),
             encoding="utf-8",
         )
-        (root / "skills" / "cv-tuning" / "scripts").mkdir(parents=True, exist_ok=True)
+        (root / "skills" / "cv-tailor" / "scripts").mkdir(parents=True, exist_ok=True)
         return root
 
     def test_real_directory_without_force_raises(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._minimal_repo(Path(tmp))
-            agent = root / ".agents" / "skills" / "cv-tuning"
+            agent = root / ".agents" / "skills" / "cv-tailor"
             agent.mkdir(parents=True)
             (agent / "keep.txt").write_text("data", encoding="utf-8")
             with self.assertRaises(RuntimeError):
@@ -250,8 +250,8 @@ class AgentSkillLinkTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._minimal_repo(Path(tmp))
             link_agent_skill.ensure_agent_skill_junction(root)
-            skills = (root / "skills" / "cv-tuning").resolve()
-            for rel in (".agents/skills/cv-tuning", ".claude/skills/cv-tuning"):
+            skills = (root / "skills" / "cv-tailor").resolve()
+            for rel in (".agents/skills/cv-tailor", ".claude/skills/cv-tailor"):
                 agent = root / rel
                 self.assertTrue(agent.exists())
                 self.assertEqual(agent.resolve(), skills)
@@ -259,9 +259,9 @@ class AgentSkillLinkTests(unittest.TestCase):
     def test_reparse_point_replaced(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._minimal_repo(Path(tmp))
-            agent = root / ".agents" / "skills" / "cv-tuning"
+            agent = root / ".agents" / "skills" / "cv-tailor"
             agent.parent.mkdir(parents=True, exist_ok=True)
-            skills = (root / "skills" / "cv-tuning").resolve()
+            skills = (root / "skills" / "cv-tailor").resolve()
             if sys.platform == "win32":
                 import subprocess
 
@@ -272,7 +272,7 @@ class AgentSkillLinkTests(unittest.TestCase):
                 )
             else:
                 agent.symlink_to(skills, target_is_directory=True)
-            marker = root / "skills" / "cv-tuning" / "resources" / "marker.txt"
+            marker = root / "skills" / "cv-tailor" / "resources" / "marker.txt"
             marker.write_text("ok", encoding="utf-8")
             link_agent_skill.ensure_agent_skill_junction(root)
             self.assertTrue((agent / "resources" / "marker.txt").is_file())
@@ -284,7 +284,7 @@ class InstalledSkillWorkspaceTests(unittest.TestCase):
             base = Path(tmp)
             skill = _stage_installed_skill(
                 base,
-                skill_parts=("installed", "cv-tuning"),
+                skill_parts=("installed", "cv-tailor"),
                 script_names=("parse_jd.py", "extract_cv.py", "compile_cv.py", "cv_io.py"),
             )
 
@@ -305,7 +305,7 @@ class InstalledSkillWorkspaceTests(unittest.TestCase):
             base = Path(tmp)
             skill = _stage_installed_skill(
                 base,
-                skill_parts=("cv-tuning",),
+                skill_parts=("cv-tailor",),
                 script_names=("extract_cv.py", "cv_io.py"),
             )
             (skill / "resources" / "harvard_cv.typ").write_text("x", encoding="utf-8")
@@ -332,18 +332,18 @@ class CursorPluginManifestTests(unittest.TestCase):
         plugin = json.loads(self.PLUGIN_JSON.read_text(encoding="utf-8"))
         marketplace = json.loads(self.MARKETPLACE_JSON.read_text(encoding="utf-8"))
 
-        self.assertEqual(plugin["name"], "cv-tuning")
+        self.assertEqual(plugin["name"], "cv-tailor")
         self.assertIn("description", plugin)
         self.assertEqual(plugin.get("skills"), "skills")
 
-        self.assertEqual(marketplace["name"], "cv-tuning")
+        self.assertEqual(marketplace["name"], "cv-tailor")
         self.assertGreaterEqual(len(marketplace["plugins"]), 1)
         entry = marketplace["plugins"][0]
         self.assertEqual(entry["name"], plugin["name"])
         self.assertEqual(entry["source"], ".")
 
         skill_text = self.SKILL_MD.read_text(encoding="utf-8")
-        self.assertIn("name: cv-tuning", skill_text.split("---", 2)[1])
+        self.assertIn("name: cv-tailor", skill_text.split("---", 2)[1])
 
 
 class ClaudePluginManifestTests(unittest.TestCase):
@@ -355,10 +355,10 @@ class ClaudePluginManifestTests(unittest.TestCase):
         plugin = json.loads(self.PLUGIN_JSON.read_text(encoding="utf-8"))
         marketplace = json.loads(self.MARKETPLACE_JSON.read_text(encoding="utf-8"))
 
-        self.assertEqual(plugin["name"], "cv-tuning")
+        self.assertEqual(plugin["name"], "cv-tailor")
         self.assertIn("description", plugin)
 
-        self.assertEqual(marketplace["name"], "cv-tuning")
+        self.assertEqual(marketplace["name"], "cv-tailor")
         self.assertIn("name", marketplace["owner"])
         self.assertGreaterEqual(len(marketplace["plugins"]), 1)
         entry = marketplace["plugins"][0]

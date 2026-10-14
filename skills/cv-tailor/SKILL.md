@@ -1,13 +1,13 @@
 ---
-name: cv-tuning
+name: cv-tailor
 description: Tune and tailor candidate CVs against Job Descriptions (JD) in assets/jd to generate Harvard-style PDFs in /output. Load this skill when asked to tune a CV, match a resume to a job description, update a CV for a target role, or process job descriptions from assets/jd.
 ---
 
-# CV Tuning Skill
+# CV Tailor Skill
 
 This skill automates the process of tailoring a candidate's base resume (`assets/cv_base.typ`, or `assets/cv_base.pdf` when present) to match specific Job Description (JD) requirements found in `assets/jd/`, generating a clean, Harvard-style PDF in `output/`.
 
-**Paths:** CV and JD files live in the **workspace** (the project you are tuning, usually the repo root with `assets/` and `output/`). Scripts live under this skill directory (`SKILL.md` and `scripts/`). Run them with the workspace as the shell working directory. Use the path to `scripts/parse_jd.py` (and siblings) from wherever this skill is installed, for example `skills/cv-tuning/scripts/` in this repo, `.agents/skills/cv-tuning/scripts/` after Cursor install, or `.claude/skills/cv-tuning/scripts/` after Claude Code install.
+**Paths:** CV and JD files live in the **workspace** (the project you are tuning, usually the repo root with `assets/` and `output/`). Scripts live under this skill directory (`SKILL.md` and `scripts/`). Run them with the workspace as the shell working directory. Use the path to `scripts/parse_jd.py` (and siblings) from wherever this skill is installed, for example `skills/cv-tailor/scripts/` in this repo, `.agents/skills/cv-tailor/scripts/` after Cursor install, or `.claude/skills/cv-tailor/scripts/` after Claude Code install.
 
 ## When to load this skill
 
@@ -133,37 +133,37 @@ python <skill-scripts>/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate
 
 Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash
-npx skills add minhhung2556/cv_tuning -a cursor -a claude-code -g -y
-npx skills add minhhung2556/cv_tuning -a claude-code -g -y
+npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
+npx skills add minhhung2556/cv_tailor -a claude-code -g -y
 ```
 
 From a local clone, pass the repository path. Use an absolute path, `.`, or `..`. A bare folder name is treated as a GitHub repository, not a local directory.
 ```bash
-npx skills add /path/to/cv_tuning -a claude-code -g -y
+npx skills add /path/to/cv_tailor -a claude-code -g -y
 npx skills add . -a cursor -a claude-code -g -y
-npx skills add ./skills/cv-tuning -a claude-code -g -y
+npx skills add ./skills/cv-tailor -a claude-code -g -y
 ```
 
 From a git URL:
 ```bash
-npx skills add https://github.com/minhhung2556/cv_tuning.git -a claude-code -g -y
-npx skills add git@github.com:minhhung2556/cv_tuning.git -a cursor -g -y
-npx skills add https://github.com/minhhung2556/cv_tuning/tree/main/skills/cv-tuning -a claude-code -g -y
+npx skills add https://github.com/minhhung2556/cv_tailor.git -a claude-code -g -y
+npx skills add git@github.com:minhhung2556/cv_tailor.git -a cursor -g -y
+npx skills add https://github.com/minhhung2556/cv_tailor/tree/main/skills/cv-tailor -a claude-code -g -y
 ```
 
-Omit `-g` to install into the current project (`.agents/skills/cv-tuning` for Cursor, `.claude/skills/cv-tuning` for Claude Code). Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
+Omit `-g` to install into the current project (`.agents/skills/cv-tailor` for Cursor, `.claude/skills/cv-tailor` for Claude Code). Private repos use the same commands with your configured git credentials. If Windows refuses the symlink, add `--copy`.
 
-**Cursor:** import `https://github.com/minhhung2556/cv_tuning` in Cursor Plugins to load this skill from the repository marketplace manifest.
+**Cursor:** import `https://github.com/minhhung2556/cv_tailor` in Cursor Plugins to load this skill from the repository marketplace manifest.
 
 **Claude Code:** register the marketplace, then install the plugin:
 ```text
-/plugin marketplace add minhhung2556/cv_tuning
-/plugin install cv-tuning@cv-tuning
+/plugin marketplace add minhhung2556/cv_tailor
+/plugin install cv-tailor@cv-tailor
 ```
 
-In this repository, `.agents/skills/cv-tuning` and `.claude/skills/cv-tuning` are junctions to `skills/cv-tuning` (not second copies). After clone, recreate them with:
+In this repository, `.agents/skills/cv-tailor` and `.claude/skills/cv-tailor` are junctions to `skills/cv-tailor` (not second copies). After clone, recreate them with:
 ```bash
-python skills/cv-tuning/scripts/link_agent_skill.py
+python skills/cv-tailor/scripts/link_agent_skill.py
 ```
 Use `--force` only to replace a real directory at those paths (not a junction).
 

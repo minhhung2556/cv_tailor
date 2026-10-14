@@ -45,7 +45,7 @@ def find_workspace_root(start: Path | None = None) -> Path:
             return candidate
 
     skill_root = find_skill_root(Path(__file__).resolve().parent)
-    if skill_root.name == "cv-tuning" and skill_root.parent.name == "skills":
+    if skill_root.name == "cv-tailor" and skill_root.parent.name == "skills":
         return skill_root.parent.parent
 
     return current
