@@ -1,0 +1,17 @@
+---
+description: Keep Cursor bot co-author trailers out of git history
+alwaysApply: true
+---
+
+# No bot co-author trailers
+
+Repositories that reject agent attribution fail CI when a commit message contains:
+
+```
+Co-authored-by: Cursor <cursoragent@cursor.com>
+```
+
+- Do not add that line, or any `Co-authored-by: Cursor` trailer, to a commit message.
+- After every `git commit`, read `git log -1 --format=%B`. If that trailer is present, it was injected after the message was written.
+- Remove it before pushing. Rewrite with `git commit-tree` or `git filter-branch --msg-filter`, which do not go through the commit path that re-adds the line. A normal `git commit` or `git commit --amend` puts the trailer back.
+- Use `git push --force-with-lease` only when the user asked to rewrite commits that already exist on the remote.

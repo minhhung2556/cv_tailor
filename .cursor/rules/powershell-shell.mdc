@@ -1,0 +1,44 @@
+---
+description: Shell is Windows PowerShell 5.1. Never chain commands with && or ||.
+alwaysApply: true
+---
+
+# Windows PowerShell shell
+
+The user shell is Windows PowerShell 5.1 (`powershell`), not bash and not PowerShell 7. `&&` and `||` are parse errors here. This has failed repeatedly. Do not use them.
+
+## How to run commands
+
+- Put the working directory in the tool's working-directory field. Do not `cd` and then chain the real command.
+- Run independent commands as separate shell calls.
+- When one command must finish before the next in the same call, put each command on its own line, or separate them with `;` only when the later command should run even if the earlier one failed.
+- When the next command must run only after success, check the result:
+
+```powershell
+python script.py
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+python other.py
+```
+
+## Do not write
+
+```powershell
+Set-Location hei_backend && python -m pytest
+cd hei_frontend && npm test
+git add . && git commit -m "msg"
+```
+
+## Write instead
+
+```powershell
+python -m pytest
+```
+
+with the working directory set to `hei_backend`, or:
+
+```powershell
+Set-Location hei_backend
+python -m pytest
+```
+
+Do not suggest `&&` in instructions the user will paste into PowerShell.
