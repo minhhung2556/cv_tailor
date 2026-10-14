@@ -5,43 +5,51 @@ Ensure .agent/skills/cv-tuning is a directory junction (Windows) or symlink to s
 
 from __future__ import annotations
 
+import argparse
 import subprocess
 import sys
 from pathlib import Path
 
-HARVARD_TEMPLATE = Path("skills/cv-tuning/resources/harvard_cv.typ")
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cv_io
+
 AGENT_SKILL = Path(".agent/skills/cv-tuning")
 SKILL_SOURCE = Path("skills/cv-tuning")
 
 
-def find_repo_root(start: Path) -> Path:
-    current = start.resolve()
-    for candidate in (current, *current.parents):
-        if (candidate / HARVARD_TEMPLATE).is_file():
-            return candidate
-    raise RuntimeError(
-        f"Could not locate repo root (missing {HARVARD_TEMPLATE}) starting from {start}"
-    )
-
-
 def _is_reparse_point(path: Path) -> bool:
-    if not path.exists():
-        return False
-    if path.is_symlink():
-        return True
+    try:
+        if path.is_symlink():
+            return True
+    except OSError:
+        pass
     if sys.platform == "win32":
         import stat
 
         try:
             return bool(path.lstat().st_file_attributes & stat.FILE_ATTRIBUTE_REPARSE_POINT)
         except (AttributeError, OSError):
-            return path.resolve() != path.absolute()
+            return False
     return False
 
 
-def ensure_agent_skill_junction(repo_root: Path | None = None) -> Path:
+def _remove_reparse_point(agent: Path) -> None:
+    if agent.is_dir():
+        agent.rmdir()
+    else:
+        agent.unlink(missing_ok=True)
+
+
+def ensure_agent_skill_junction(
+    repo_root: Path | None = None,
+    *,
+    force: bool = False,
+) -> Path:
     if repo_root is None:
-        repo_root = find_repo_root(Path(__file__).resolve().parent)
+        repo_root = cv_io.find_repo_root(Path(__file__).resolve().parent)
 
     agent = repo_root / AGENT_SKILL
     skills = (repo_root / SKILL_SOURCE).resolve()
@@ -55,14 +63,20 @@ def ensure_agent_skill_junction(repo_root: Path | None = None) -> Path:
         except OSError:
             pass
         if _is_reparse_point(agent):
-            if agent.is_dir():
-                agent.rmdir()
-            else:
-                agent.unlink()
-        else:
+            _remove_reparse_point(agent)
+        elif agent.is_file():
+            agent.unlink()
+        elif agent.is_dir():
+            if not force:
+                raise RuntimeError(
+                    f"{agent} is a real directory, not a junction. "
+                    "Remove it manually or pass --force to delete and recreate."
+                )
             import shutil
 
             shutil.rmtree(agent)
+    elif _is_reparse_point(agent):
+        _remove_reparse_point(agent)
 
     agent.parent.mkdir(parents=True, exist_ok=True)
 
@@ -84,8 +98,15 @@ def ensure_agent_skill_junction(repo_root: Path | None = None) -> Path:
 
 
 def main() -> None:
-    root = find_repo_root(Path(__file__).resolve().parent)
-    path = ensure_agent_skill_junction(root)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Delete a real directory at the agent skill path before linking",
+    )
+    args = parser.parse_args()
+    root = cv_io.find_repo_root(Path(__file__).resolve().parent)
+    path = ensure_agent_skill_junction(root, force=args.force)
     print(f"Linked {path} -> {(root / SKILL_SOURCE).resolve()}")
 
 

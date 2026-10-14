@@ -7,40 +7,32 @@ import subprocess
 import sys
 from pathlib import Path
 
-HARVARD_TEMPLATE = Path("skills/cv-tuning/resources/harvard_cv.typ")
+_SCRIPT_DIR = Path(__file__).resolve().parent
+if str(_SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPT_DIR))
+
+import cv_io
+
 TYPST_TIMEOUT_SECONDS = 120
 
 
-def find_repo_root(start: Path) -> Path:
-    current = start.resolve()
-    for candidate in (current, *current.parents):
-        if (candidate / HARVARD_TEMPLATE).is_file():
-            return candidate
-    raise RuntimeError(
-        f"Could not locate repo root (missing {HARVARD_TEMPLATE}) "
-        f"starting from {start}"
-    )
-
-
-def resolve_repo_path(repo_root: Path, path_str: str) -> Path:
-    path = Path(path_str)
-    if path.is_absolute():
-        return path.resolve()
-    return (repo_root / path).resolve()
-
-
-def pdf_page_count(pdf_path: str) -> int | None:
+def pdf_page_count(pdf_path: str) -> int:
+    path = Path(pdf_path)
+    if not path.is_file():
+        raise FileNotFoundError(f"PDF not found: {pdf_path}")
     try:
         import pypdf
-
-        return len(pypdf.PdfReader(pdf_path).pages)
-    except Exception:
-        return None
+    except ImportError as e:
+        raise RuntimeError(cv_io.PYPDF_INSTALL_MSG) from e
+    try:
+        return len(pypdf.PdfReader(str(path)).pages)
+    except Exception as e:
+        raise RuntimeError(f"Could not read PDF page count for {pdf_path}: {e}") from e
 
 
 def compile_cv(typ_path: str, output_path: str | None = None) -> str:
-    repo_root = find_repo_root(Path(__file__).resolve().parent)
-    typ_file = resolve_repo_path(repo_root, typ_path)
+    repo_root = cv_io.find_repo_root(Path(__file__).resolve().parent)
+    typ_file = cv_io.resolve_repo_path(repo_root, typ_path)
     if not typ_file.exists():
         raise FileNotFoundError(f"Typst source file not found: {typ_path}")
 
@@ -50,7 +42,7 @@ def compile_cv(typ_path: str, output_path: str | None = None) -> str:
         pdf_name = typ_file.stem + ".pdf"
         output_path = str(output_dir / pdf_name)
     else:
-        out_p = resolve_repo_path(repo_root, output_path)
+        out_p = cv_io.resolve_repo_path(repo_root, output_path)
         out_p.parent.mkdir(parents=True, exist_ok=True)
         output_path = str(out_p)
 
@@ -96,6 +88,7 @@ def compile_cv(typ_path: str, output_path: str | None = None) -> str:
 
 
 def main():
+    cv_io.configure_utf8_stdout()
     if len(sys.argv) < 2:
         print("Usage: python compile_cv.py <file.typ> [output_pdf_path]")
         sys.exit(1)
@@ -107,8 +100,7 @@ def main():
         pdf = compile_cv(typ_path, output_path)
         pages = pdf_page_count(pdf)
         print(f"Successfully generated PDF: {pdf}")
-        if pages is not None:
-            print(f"Page count: {pages}")
+        print(f"Page count: {pages}")
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
