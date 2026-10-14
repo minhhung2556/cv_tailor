@@ -86,3 +86,4 @@ htmlcov/
 assets/
 output/
 .agents/skills/cv-tuning
+.claude/skills/cv-tuning

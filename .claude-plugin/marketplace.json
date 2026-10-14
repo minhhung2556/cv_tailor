@@ -1,0 +1,15 @@
+{
+  "name": "cv-tuning",
+  "owner": {
+    "name": "minhhung2556",
+    "url": "https://github.com/minhhung2556/cv_tuning"
+  },
+  "description": "Tailor a base CV against job descriptions and compile Harvard-style PDFs.",
+  "plugins": [
+    {
+      "name": "cv-tuning",
+      "source": ".",
+      "description": "Tailor a base CV against job descriptions and compile Harvard-style PDFs."
+    }
+  ]
+}

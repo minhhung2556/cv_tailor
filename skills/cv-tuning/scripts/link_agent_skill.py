@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Ensure .agents/skills/cv-tuning is a directory junction (Windows) or symlink to skills/cv-tuning.
+Ensure agent skill paths are directory junctions (Windows) or symlinks to skills/cv-tuning.
+
+Creates .agents/skills/cv-tuning (Cursor) and .claude/skills/cv-tuning (Claude Code).
 """
 
 from __future__ import annotations
@@ -16,8 +18,10 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cv_io
 
-AGENT_SKILL = Path(".agents/skills/cv-tuning")
+CURSOR_AGENT_SKILL = Path(".agents/skills/cv-tuning")
+CLAUDE_AGENT_SKILL = Path(".claude/skills/cv-tuning")
 SKILL_SOURCE = Path("skills/cv-tuning")
+AGENT_SKILL_LINKS = (CURSOR_AGENT_SKILL, CLAUDE_AGENT_SKILL)
 
 
 def _is_reparse_point(path: Path) -> bool:
@@ -43,18 +47,14 @@ def _remove_reparse_point(agent: Path) -> None:
         agent.unlink(missing_ok=True)
 
 
-def ensure_agent_skill_junction(
-    repo_root: Path | None = None,
+def _ensure_skill_junction_at(
+    repo_root: Path,
+    agent_rel: Path,
+    skills: Path,
     *,
     force: bool = False,
 ) -> Path:
-    if repo_root is None:
-        repo_root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
-
-    agent = repo_root / AGENT_SKILL
-    skills = (repo_root / SKILL_SOURCE).resolve()
-    if not skills.is_dir():
-        raise RuntimeError(f"Missing skill source directory: {skills}")
+    agent = repo_root / agent_rel
 
     if agent.exists():
         try:
@@ -97,17 +97,36 @@ def ensure_agent_skill_junction(
     return agent
 
 
+def ensure_agent_skill_junction(
+    repo_root: Path | None = None,
+    *,
+    force: bool = False,
+) -> list[Path]:
+    if repo_root is None:
+        repo_root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
+
+    skills = (repo_root / SKILL_SOURCE).resolve()
+    if not skills.is_dir():
+        raise RuntimeError(f"Missing skill source directory: {skills}")
+
+    linked: list[Path] = []
+    for agent_rel in AGENT_SKILL_LINKS:
+        linked.append(_ensure_skill_junction_at(repo_root, agent_rel, skills, force=force))
+    return linked
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Delete a real directory at the agent skill path before linking",
+        help="Delete a real directory at an agent skill path before linking",
     )
     args = parser.parse_args()
     root = cv_io.find_workspace_root(Path(__file__).resolve().parent)
-    path = ensure_agent_skill_junction(root, force=args.force)
-    print(f"Linked {path} -> {(root / SKILL_SOURCE).resolve()}")
+    target = (root / SKILL_SOURCE).resolve()
+    for path in ensure_agent_skill_junction(root, force=args.force):
+        print(f"Linked {path} -> {target}")
 
 
 if __name__ == "__main__":
