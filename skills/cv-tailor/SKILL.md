@@ -22,7 +22,8 @@ Load this skill whenever the user asks to:
 ## Workflow & Step-by-Step Instructions
 
 ### Step 1: Detect and Parse Job Description(s)
-Check `assets/jd/` for target JD files (supported extensions: `.html`, `.htm`, `.txt`, `.pdf`, `.md`).
+Check `assets/jd/` for target JD files (supported extensions: `.html`, `.htm`, `.txt`, `.pdf`, `.md`, `.docx`).
+Legacy `.doc` (old binary Word) is not supported. Convert it to `.docx` (or export as PDF/text) first.
 The parser keeps HTML `<header>` and document `<title>` text, and removes nav, footer, scripts, and styles. Unsupported extensions raise an error instead of being read as plain text.
 Run the parser script to extract clean text (replace `<skill-scripts>` with this skill's `scripts/` directory):
 ```bash
@@ -126,9 +127,29 @@ Create a `.typ` file under `output/` (or another writable path). Import the Harv
 ### Step 5: Compile PDF to Output Directory
 Relative paths passed to `compile_cv.py` (Typst source and output PDF) are resolved from the workspace root, not only the shell working directory.
 If you omit the PDF path, `compile_cv.py` writes `<source>.pdf` beside the `.typ` file.
+**Requires the `typst` CLI.** If Typst is not installed, use the Word route in Step 5-ALT instead.
 Run `compile_cv.py` with an explicit destination for the tuned CV:
 ```bash
 python <skill-scripts>/compile_cv.py "output/tuned_cv.typ" "output/CV_<Candidate_Name>_<Company>_<Role>.pdf"
+```
+
+### Step 5-ALT: Export as Word (.docx) instead of or in addition to PDF
+When the user wants an editable Word document (or has no Typst installed), skip the Typst route and render the tuned CV from a JSON spec. The JSON schema mirrors the Typst helpers one-to-one (see `resources/cv_spec.example.json` in this skill):
+
+- `type: "text"` → a paragraph (like `cv_section` + prose)
+- `type: "bullets"` → a bulleted list (Core Competencies, Technical Skills)
+- `type: "experience"` → `cv_experience` entries (company/location/role/dates/bullets)
+- `type: "entries"` → `cv_entry` items (title/subtitle/dates/details) for Education, Credentials
+
+Write the tuned spec (e.g. to `output/<name>.json`), then render:
+```bash
+python <skill-scripts>/build_docx_cv.py "output/<name>.json" "output/CV_<Candidate_Name>_<Company>_<Role>.docx"
+```
+The `.docx` reproduces the Harvard layout (A4, Times New Roman, centered header, ruled section headings, right-aligned dates) with `python-docx` only. No Typst required.
+
+To also produce a PDF from that `.docx` without Typst (MS Word on Windows, or LibreOffice if `soffice` is on PATH):
+```bash
+python <skill-scripts>/docx_to_pdf.py "output/CV_<Candidate_Name>_<Company>_<Role>.docx" "output/CV_<Candidate_Name>_<Company>_<Role>.pdf"
 ```
 
 ### Install and agent discovery
@@ -172,5 +193,10 @@ python skills/cv-tailor/scripts/link_agent_skill.py
 Use `--force` only to replace a real directory at an agent skill path (not a junction).
 
 ### Step 6: Verify and Report Output
-1. Check that the PDF exists at the path printed by `compile_cv.py` (typically under `output/` when you passed that path) and note the page count.
+1. Check that the PDF (and/or `.docx`) was written successfully (typically under `output/`). For the Typst route, note the page count from `compile_cv.py`.
 2. Report the generated file location to the user, summarize key adjustments made to match the target JD, and include the JD keyword lists (used vs skipped). Confirm every employer, product, credential, skill category, and education entry from the extract appears in the tuned CV.
+
+> Environment notes:
+> - Dependencies: `pip install -r requirements.txt` (beautifulsoup4, pypdf, python-docx).
+> - **Typst PDF route** (`compile_cv.py`) needs the `typst` CLI installed separately.
+> - **Word route** (`build_docx_cv.py` → `docx_to_pdf.py`) needs no Typst; PDF conversion uses MS Word (`pywin32`, Windows) or LibreOffice (`soffice` on PATH).

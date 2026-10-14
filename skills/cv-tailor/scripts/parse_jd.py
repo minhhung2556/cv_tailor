@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 parse_jd.py - Extracts plain text from Job Description (JD) files of various formats:
-HTML (.html, .htm), PDF (.pdf), Markdown (.md), Plain Text (.txt).
+HTML (.html, .htm), PDF (.pdf), Word (.docx), Markdown (.md), Plain Text (.txt).
+
+Legacy Word binary (.doc) is not supported; convert to .docx or export as PDF/text first.
 """
 
 import os
@@ -15,7 +17,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 
 import cv_io
 
-JD_EXTENSIONS = {".html", ".htm", ".pdf", ".md", ".txt"}
+JD_EXTENSIONS = {".html", ".htm", ".pdf", ".md", ".txt", ".docx"}
 STRIP_TAGS = ("script", "style", "noscript", "nav", "footer")
 HEAD_STRIP_TAGS = ("script", "style", "noscript")
 
@@ -57,15 +59,43 @@ def _parse_html(path: Path) -> str:
         raise RuntimeError(f"Error reading HTML file {path}: {e}") from e
 
 
+def _parse_docx(path: Path) -> str:
+    try:
+        from docx import Document
+        from docx.oxml.ns import qn
+        from docx.table import Table
+        from docx.text.paragraph import Paragraph
+    except ImportError as e:
+        raise RuntimeError(
+            "Word parsing requires python-docx. Install with: pip install python-docx"
+        ) from e
+
+    doc = Document(str(path))
+    lines = []
+    for child in doc.element.body.iterchildren():
+        if child.tag == qn("w:p"):
+            lines.append(Paragraph(child, doc).text)
+        elif child.tag == qn("w:tbl"):
+            for row in Table(child, doc).rows:
+                lines.append("\t".join(cell.text for cell in row.cells))
+    return "\n".join(line for line in lines if line.strip())
+
+
 def parse_jd(file_path: str) -> str:
     path = cv_io.resolve_user_path(file_path)
     if not path.exists():
         raise FileNotFoundError(f"JD file not found: {file_path}")
 
     ext = path.suffix.lower()
+    if ext == ".doc":
+        raise RuntimeError(
+            f"Legacy .doc is not supported: {file_path}. "
+            "Convert it to .docx (or export as PDF/text) and retry."
+        )
     if ext not in JD_EXTENSIONS:
         raise ValueError(
-            f"Unsupported JD format '{ext}'. Use .html, .htm, .pdf, .md, or .txt."
+            f"Unsupported JD format '{ext}'. "
+            "Use .html, .htm, .pdf, .md, .txt, or .docx."
         )
 
     if ext in (".html", ".htm"):
@@ -73,6 +103,12 @@ def parse_jd(file_path: str) -> str:
 
     if ext == ".pdf":
         return _normalize_text(cv_io.extract_pdf_text(path))
+
+    if ext == ".docx":
+        try:
+            return _normalize_text(_parse_docx(path))
+        except OSError as e:
+            raise RuntimeError(f"Error reading Word file {file_path}: {e}") from e
 
     return _normalize_text(cv_io.read_text_file(path))
 
