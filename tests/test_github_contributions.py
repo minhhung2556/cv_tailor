@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -98,6 +99,32 @@ class TypstSnippetTests(unittest.TestCase):
             cio.repo_name_from_typst_company("acme/widget (https://github.com/acme/widget)"),
             "acme/widget",
         )
+
+    def test_typst_keeps_unicode_and_escapes_specials(self):
+        rec = _sample_record(
+            description='Tiếng "Việt"\nsecond line',
+            primary_language=None,
+            topics=[],
+            commit_count=0,
+        )
+        typst = cio.format_typst_cv_experience(rec)
+        self.assertIn("Tiếng", typst)
+        self.assertIn('\\"', typst)
+        self.assertIn("\\n", typst)
+        self.assertNotIn("\\u", typst)
+
+
+class WorkspaceRootTests(unittest.TestCase):
+    def test_ignores_parent_with_only_empty_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            parent = base / "parent"
+            workspace = base / "workspace"
+            (parent / "assets").mkdir(parents=True)
+            (workspace / "assets").mkdir(parents=True)
+            (workspace / "assets" / "cv_base.typ").write_text("cv\n", encoding="utf-8")
+            root = cio.find_workspace_root(workspace)
+            self.assertEqual(root.resolve(), workspace.resolve())
 
 
 class BuildPayloadTests(unittest.TestCase):
