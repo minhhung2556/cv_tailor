@@ -73,15 +73,8 @@ After merging Projects, run [cv-tailor](../cv-tailor/SKILL.md) to tune against a
 
 ## Install
 
-Install with the other CV skills from the repository root (not from `skills/cv-tailor` alone):
-
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
-npx skills add . -a cursor -a claude-code -g -y
 ```
 
-After clone, recreate in-repo junctions for every skill:
-
-```bash
-python skills/cv-tailor/scripts/link_agent_skill.py
-```
+More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).
