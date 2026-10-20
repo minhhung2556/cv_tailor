@@ -32,8 +32,7 @@ def collect(
     for repo in enriched:
         is_fork = bool(repo.pop("_fork", False))
         if include_all or cio.should_include_repo(repo, is_fork=is_fork):
-            clean = {k: v for k, v in repo.items() if not k.startswith("_")}
-            filtered.append(clean)
+            filtered.append(cio.strip_private(repo))
     payload = cio.build_payload(listed["viewer"], filtered)
     cio.write_payload(out_path, payload)
     return out_path

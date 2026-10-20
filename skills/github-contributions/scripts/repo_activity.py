@@ -13,6 +13,7 @@ _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
 
+import contributions_io as cio
 import github_api as gh
 
 BATCH_SIZE = 15
@@ -189,7 +190,7 @@ def main() -> None:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     if args.json or not args.input:
-        clean_repos = [{k: v for k, v in r.items() if not k.startswith("_")} for r in out["repos"]]
+        clean_repos = [cio.strip_private(r) for r in out["repos"]]
         print(json.dumps({"viewer": out["viewer"], "repos": clean_repos}, ensure_ascii=False, indent=2))
     else:
         for r in out["repos"]:

@@ -169,8 +169,7 @@ def main() -> None:
         # Strip internal keys
         repos = []
         for r in result["repos"]:
-            clean = {k: v for k, v in r.items() if not k.startswith("_")}
-            repos.append(clean)
+            repos.append(cio.strip_private(r))
         print(
             json.dumps(
                 {"viewer_login": result["viewer"].get("login"), "repos": repos},

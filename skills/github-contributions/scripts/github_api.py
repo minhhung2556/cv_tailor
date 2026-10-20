@@ -6,12 +6,15 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from typing import Any
 
 GH_INSTALL_MSG = (
     "GitHub CLI (gh) is required. Install from https://cli.github.com/ and run: gh auth login"
 )
 GH_AUTH_MSG = "gh is not authenticated. Run: gh auth login"
+GH_TIMEOUT_SECONDS = 120
+GH_MAX_RATE_LIMIT_RETRIES = 3
 
 
 class GhError(RuntimeError):
@@ -32,25 +35,45 @@ def _require_gh() -> str:
     return gh
 
 
+def _is_rate_limited(stderr: str, returncode: int) -> bool:
+    if returncode == 429:
+        return True
+    lower = stderr.lower()
+    if "rate limit" in lower or "secondary rate limit" in lower:
+        return True
+    if returncode == 403 and ("rate" in lower or "abuse" in lower):
+        return True
+    return False
+
+
 def _run_gh(args: list[str], *, input_text: str | None = None) -> str:
     gh = _require_gh()
-    try:
-        proc = subprocess.run(
-            [gh, *args],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            input=input_text,
-            check=False,
-        )
-    except OSError as e:
-        raise GhError(GH_INSTALL_MSG) from e
-    if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "").strip()
-        if "not logged in" in err.lower() or "401" in err:
+    last_err = ""
+    for attempt in range(GH_MAX_RATE_LIMIT_RETRIES):
+        try:
+            proc = subprocess.run(
+                [gh, *args],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                input=input_text,
+                check=False,
+                timeout=GH_TIMEOUT_SECONDS,
+            )
+        except subprocess.TimeoutExpired as e:
+            raise GhError(f"gh timed out after {GH_TIMEOUT_SECONDS} seconds") from e
+        except OSError as e:
+            raise GhError(GH_INSTALL_MSG) from e
+        if proc.returncode == 0:
+            return proc.stdout
+        last_err = (proc.stderr or proc.stdout or "").strip()
+        if _is_rate_limited(last_err, proc.returncode) and attempt < GH_MAX_RATE_LIMIT_RETRIES - 1:
+            time.sleep(2 ** attempt)
+            continue
+        if "not logged in" in last_err.lower() or "401" in last_err:
             raise GhError(GH_AUTH_MSG)
-        raise GhError(err or f"gh exited with code {proc.returncode}")
-    return proc.stdout
+        raise GhError(last_err or f"gh exited with code {proc.returncode}")
+    raise GhError(last_err or "gh rate limit exceeded")
 
 
 def ensure_authenticated() -> dict[str, Any]:
@@ -83,7 +106,10 @@ def gh_api_paginated(path: str, *, params: dict[str, str] | None = None) -> list
         chunk = chunk.strip()
         if not chunk:
             continue
-        page = json.loads(chunk)
+        try:
+            page = json.loads(chunk)
+        except json.JSONDecodeError as e:
+            raise GhError(f"Invalid JSON in paginated gh response: {e}") from e
         if isinstance(page, list):
             items.extend(page)
         else:
@@ -111,6 +137,10 @@ def gh_graphql(query: str, variables: dict[str, Any] | None = None) -> dict[str,
     return data.get("data") or {}
 
 
+def _escape_graphql_cursor(cursor: str) -> str:
+    return cursor.replace("\\", "\\\\").replace('"', '\\"')
+
+
 def gh_graphql_paginated(
     build_query: str,
     connection_path: list[str],
@@ -127,14 +157,22 @@ def gh_graphql_paginated(
     nodes: list[dict[str, Any]] = []
     cursor: str | None = None
     for _ in range(max_pages):
-        after_part = f', after: "{cursor}"' if cursor else ""
+        if cursor:
+            escaped = _escape_graphql_cursor(cursor)
+            after_part = f', after: "{escaped}"'
+        else:
+            after_part = ""
         query = build_query.replace("__FIRST__", str(page_size)).replace(
             "__AFTER__", after_part
         )
         data = gh_graphql(query)
         conn: Any = data
-        for key in connection_path:
-            conn = conn[key]
+        try:
+            for key in connection_path:
+                conn = conn[key]
+        except (KeyError, TypeError) as e:
+            path = ".".join(connection_path)
+            raise GhError(f"Missing GraphQL connection at {path}: {e}") from e
         page_nodes = conn.get("nodes") or []
         nodes.extend(page_nodes)
         page_info = conn.get("pageInfo") or {}
