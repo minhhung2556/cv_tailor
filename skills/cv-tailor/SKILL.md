@@ -154,7 +154,7 @@ python <skill-scripts>/docx_to_pdf.py "output/CV_<Candidate_Name>_<Company>_<Rol
 
 ### Install and agent discovery
 
-This repository ships three agent skills under `skills/`: `cv-tailor`, `github-contributions`, and `cv-section-audit`. Repo-level install commands below add all of them. `./skills/cv-tailor` installs only this skill.
+This repository ships four agent skills under `skills/`: `cv-tailor`, `cover-letter`, `github-contributions`, and `cv-section-audit`. Repo-level install commands below add all of them. `./skills/cv-tailor` installs only this skill.
 
 Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash

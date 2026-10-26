@@ -7,6 +7,7 @@ Agent workflows live in [skills/](skills/):
 - [skills/cv-tailor/SKILL.md](skills/cv-tailor/SKILL.md): parse JDs, tune the CV, compile PDF or Word.
 - [skills/github-contributions/SKILL.md](skills/github-contributions/SKILL.md): collect GitHub repo evidence into the base CV.
 - [skills/cv-section-audit/SKILL.md](skills/cv-section-audit/SKILL.md): clean section overlap before tailoring.
+- [skills/cover-letter/SKILL.md](skills/cover-letter/SKILL.md): write a one-page English cover letter for a job in `assets/jd/`.
 
 ## What this solves
 
