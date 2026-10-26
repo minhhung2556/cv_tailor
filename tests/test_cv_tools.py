@@ -148,6 +148,21 @@ class ParseJdTests(unittest.TestCase):
             text = parse_jd.parse_jd(str(path))
         self.assertEqual(text, "Role title\nSecond line")
 
+    def test_docx_table_dedupes_merged_cell_text(self):
+        try:
+            from docx import Document
+        except ImportError:
+            self.skipTest("python-docx not installed")
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "jd.docx"
+            doc = Document()
+            table = doc.add_table(rows=1, cols=2)
+            table.rows[0].cells[0].text = "Same requirement"
+            table.rows[0].cells[1].text = "Same requirement"
+            doc.save(str(path))
+            text = parse_jd.parse_jd(str(path))
+        self.assertEqual(text.count("Same requirement"), 1)
+
 
 class BuildDocxCvTests(unittest.TestCase):
     def test_build_writes_name_and_bullet(self):
@@ -202,6 +217,34 @@ class DocxToPdfTests(unittest.TestCase):
                     with self.assertRaises(RuntimeError) as ctx:
                         docx_to_pdf.docx_to_pdf(str(docx_path), str(pdf_path))
             self.assertIn("converter", str(ctx.exception).lower())
+
+    def test_word_failure_still_tries_libreoffice(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            docx_path = Path(tmp) / "in.docx"
+            _write_minimal_docx(docx_path, "x")
+            pdf_path = Path(tmp) / "out.pdf"
+            lo = mock.Mock(return_value=False)
+
+            def word_broken(*_args, **_kwargs):
+                raise OSError("COM failed")
+
+            with mock.patch.object(docx_to_pdf, "_convert_with_word", side_effect=word_broken):
+                with mock.patch.object(docx_to_pdf, "_convert_with_libreoffice", lo):
+                    with self.assertRaises(RuntimeError):
+                        docx_to_pdf.docx_to_pdf(str(docx_path), str(pdf_path))
+            lo.assert_called_once()
+
+    def test_stale_destination_pdf_not_returned_on_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            docx_path = Path(tmp) / "in.docx"
+            _write_minimal_docx(docx_path, "x")
+            pdf_path = Path(tmp) / "out.pdf"
+            pdf_path.write_bytes(b"%PDF-old\n")
+            with mock.patch.object(docx_to_pdf, "_convert_with_word", return_value=False):
+                with mock.patch.object(docx_to_pdf, "_convert_with_libreoffice", return_value=False):
+                    with self.assertRaises(RuntimeError):
+                        docx_to_pdf.docx_to_pdf(str(docx_path), str(pdf_path))
+            self.assertEqual(pdf_path.read_bytes(), b"%PDF-old\n")
 
 
 class ExtractCvTests(unittest.TestCase):
@@ -319,6 +362,30 @@ class CompileCvTests(unittest.TestCase):
                     with mock.patch.object(compile_cv.subprocess, "run", side_effect=fake_run):
                         result = compile_cv.compile_cv(str(typ))
             self.assertEqual(result, str(expected_pdf))
+
+    def test_compile_cv_typst_root_when_typ_outside_workspace(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            workspace = base / "workspace"
+            (workspace / "assets").mkdir(parents=True)
+            (workspace / "assets" / "cv_base.typ").write_text("x", encoding="utf-8")
+            outside = base / "outside"
+            outside.mkdir()
+            typ = outside / "tuned.typ"
+            typ.write_text("#import \"harvard_cv.typ\"\n", encoding="utf-8")
+            expected_pdf = typ.with_suffix(".pdf")
+            expected_pdf.write_bytes(b"%PDF-1.4\n")
+            captured_root: list[str] = []
+
+            def fake_run(cmd, **kwargs):
+                captured_root.append(cmd[cmd.index("--root") + 1])
+                return mock.Mock(returncode=0, stdout="", stderr="")
+
+            with mock.patch.object(compile_cv.cv_io, "find_workspace_root", return_value=workspace):
+                with mock.patch.object(compile_cv.cv_io, "stage_harvard_template_next_to"):
+                    with mock.patch.object(compile_cv.subprocess, "run", side_effect=fake_run):
+                        compile_cv.compile_cv(str(typ))
+            self.assertEqual(captured_root[0], str(outside.resolve()))
 
 
 class AgentSkillLinkTests(unittest.TestCase):
@@ -459,6 +526,27 @@ class CursorPluginManifestTests(unittest.TestCase):
 
         skill_text = self.SKILL_MD.read_text(encoding="utf-8")
         self.assertIn("name: cv-tailor", skill_text.split("---", 2)[1])
+
+
+class HarvardLayoutDriftTests(unittest.TestCase):
+    """Typst template sizes must stay aligned with build_docx_cv.py constants."""
+
+    TYPST_TOKENS = (
+        "9.5pt",
+        "17pt",
+        "10.5pt",
+        "8.5pt",
+        "10pt",
+        "1.5cm",
+        "1.4cm",
+        "#111111",
+        "#333333",
+    )
+
+    def test_harvard_typst_contains_docx_layout_tokens(self):
+        text = HARVARD.read_text(encoding="utf-8")
+        for token in self.TYPST_TOKENS:
+            self.assertIn(token, text, msg=f"missing {token} in harvard_cv.typ")
 
 
 class ClaudePluginManifestTests(unittest.TestCase):

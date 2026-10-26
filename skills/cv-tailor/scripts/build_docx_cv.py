@@ -228,8 +228,8 @@ def main():
               file=sys.stderr)
         sys.exit(1)
 
-    spec_path = Path(sys.argv[1])
-    output_path = sys.argv[2]
+    spec_path = cv_io.resolve_user_path(sys.argv[1])
+    output_path = str(cv_io.resolve_user_path(sys.argv[2]))
 
     try:
         spec = json.loads(spec_path.read_text(encoding="utf-8"))

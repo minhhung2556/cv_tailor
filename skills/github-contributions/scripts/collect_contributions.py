@@ -30,10 +30,8 @@ def collect(
     enriched = repo_activity.enrich_repos_with_activity(listed["repos"], listed["viewer"])
     filtered: list[dict] = []
     for repo in enriched:
-        is_fork = bool(repo.pop("_fork", False))
-        if include_all or cio.should_include_repo(repo, is_fork=is_fork):
-            clean = {k: v for k, v in repo.items() if not k.startswith("_")}
-            filtered.append(clean)
+        if include_all or cio.should_include_repo(repo):
+            filtered.append(cio.strip_private(repo))
     payload = cio.build_payload(listed["viewer"], filtered)
     cio.write_payload(out_path, payload)
     return out_path
@@ -51,7 +49,7 @@ def main() -> None:
     parser.add_argument(
         "--include-all",
         action="store_true",
-        help="Include repos that would normally be skipped (empty forks)",
+        help="Include repos with no description and no authored commits",
     )
     args = parser.parse_args()
     workspace = cio.find_workspace_root()

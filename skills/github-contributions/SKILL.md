@@ -50,7 +50,7 @@ Each repo record includes: `name_with_owner`, `url`, `private`, `description`, `
 
 **Scope:** Repositories from affiliations (including private) plus `repositoriesContributedTo` with commit contributions. Metadata only; no clone and no file contents.
 
-**Filtering:** By default, repos with a non-empty description or `commit_count > 0` are kept. Empty forks with no viewer commits and no description are skipped. Use `--include-all` on `collect_contributions.py` to retain everything.
+**Filtering:** By default, repos with a non-empty description or `commit_count > 0` are kept. Repos with no description and no authored commits are skipped. Use `--include-all` on `collect_contributions.py` to retain everything.
 
 ## Step 3: Merge into `assets/cv_base.typ`
 
@@ -73,15 +73,8 @@ After merging Projects, run [cv-tailor](../cv-tailor/SKILL.md) to tune against a
 
 ## Install
 
-Install with the other CV skills from the repository root (not from `skills/cv-tailor` alone):
-
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
-npx skills add . -a cursor -a claude-code -g -y
 ```
 
-After clone, recreate in-repo junctions for every skill:
-
-```bash
-python skills/cv-tailor/scripts/link_agent_skill.py
-```
+More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).

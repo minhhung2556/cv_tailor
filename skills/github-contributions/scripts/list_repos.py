@@ -16,6 +16,31 @@ if str(_SCRIPT_DIR) not in sys.path:
 import contributions_io as cio
 import github_api as gh
 
+CONTRIBUTED_REPOS_QUERY = """
+query($first: Int!, $after: String) {
+  viewer {
+    repositoriesContributedTo(
+      first: $first
+      after: $after
+      includeUserRepositories: true
+      contributionTypes: [COMMIT]
+    ) {
+      nodes {
+        nameWithOwner
+        url
+        isPrivate
+        description
+        primaryLanguage { name }
+        repositoryTopics(first: 20) { nodes { topic { name } } }
+        stargazerCount
+        isFork
+      }
+      pageInfo { hasNextPage endCursor }
+    }
+  }
+}
+"""
+
 
 def _role_from_rest(repo: dict[str, Any], viewer_login: str) -> str:
     owner = repo.get("owner") or {}
@@ -30,19 +55,17 @@ def _role_from_rest(repo: dict[str, Any], viewer_login: str) -> str:
 
 def _rest_repo_to_stub(repo: dict[str, Any], viewer_login: str) -> dict[str, Any]:
     name = repo.get("full_name") or repo.get("name") or ""
-    return {
-        **cio.empty_repo_record(
-            name,
-            repo.get("html_url") or f"https://github.com/{name}",
-            private=bool(repo.get("private")),
-            role=_role_from_rest(repo, viewer_login),
-        ),
-        "description": repo.get("description"),
-        "primary_language": repo.get("language"),
-        "topics": list(repo.get("topics") or []),
-        "stars": repo.get("stargazers_count"),
-        "_fork": bool(repo.get("fork")),
-    }
+    return cio.repo_stub(
+        name,
+        repo.get("html_url") or f"https://github.com/{name}",
+        private=bool(repo.get("private")),
+        role=_role_from_rest(repo, viewer_login),
+        description=repo.get("description"),
+        primary_language=repo.get("language"),
+        topics=list(repo.get("topics") or []),
+        stars=repo.get("stargazers_count"),
+        is_fork=bool(repo.get("fork")),
+    )
 
 
 def _fetch_affiliated_repos(viewer_login: str) -> dict[str, dict[str, Any]]:
@@ -62,38 +85,21 @@ def _fetch_affiliated_repos(viewer_login: str) -> dict[str, dict[str, Any]]:
         name = repo.get("full_name")
         if not name:
             continue
-        stub = _rest_repo_to_stub(repo, viewer_login)
-        by_name[name] = stub
+        by_name[name] = _rest_repo_to_stub(repo, viewer_login)
     return by_name
 
 
-def _fetch_contributed_repos(viewer_node_id: str) -> list[dict[str, Any]]:
-    query_template = """
-    {
-      viewer {
-        repositoriesContributedTo(
-          first: __FIRST__
-          __AFTER__
-          includeUserRepositories: true
-          contributionTypes: [COMMIT]
-        ) {
-          nodes {
-            nameWithOwner
-            url
-            isPrivate
-            description
-            primaryLanguage { name }
-            repositoryTopics(first: 20) { nodes { topic { name } } }
-            stargazerCount
-            isFork
-          }
-          pageInfo { hasNextPage endCursor }
-        }
-      }
-    }
-    """
+def _graphql_topics(node: dict[str, Any]) -> list[str]:
+    return [
+        t.get("topic", {}).get("name")
+        for t in (node.get("repositoryTopics") or {}).get("nodes") or []
+        if t.get("topic", {}).get("name")
+    ]
+
+
+def _fetch_contributed_repos() -> list[dict[str, Any]]:
     nodes = gh.gh_graphql_paginated(
-        query_template,
+        CONTRIBUTED_REPOS_QUERY,
         ["viewer", "repositoriesContributedTo"],
         page_size=100,
     )
@@ -102,26 +108,19 @@ def _fetch_contributed_repos(viewer_node_id: str) -> list[dict[str, Any]]:
         name = node.get("nameWithOwner") or ""
         if not name:
             continue
-        topics = [
-            t.get("topic", {}).get("name")
-            for t in (node.get("repositoryTopics") or {}).get("nodes") or []
-            if t.get("topic", {}).get("name")
-        ]
         lang = (node.get("primaryLanguage") or {}).get("name")
         stubs.append(
-            {
-                **cio.empty_repo_record(
-                    name,
-                    node.get("url") or f"https://github.com/{name}",
-                    private=bool(node.get("isPrivate")),
-                    role=cio.ROLE_CONTRIBUTOR,
-                ),
-                "description": node.get("description"),
-                "primary_language": lang,
-                "topics": topics,
-                "stars": node.get("stargazerCount"),
-                "_fork": bool(node.get("isFork")),
-            }
+            cio.repo_stub(
+                name,
+                node.get("url") or f"https://github.com/{name}",
+                private=bool(node.get("isPrivate")),
+                role=cio.ROLE_CONTRIBUTOR,
+                description=node.get("description"),
+                primary_language=lang,
+                topics=_graphql_topics(node),
+                stars=node.get("stargazerCount"),
+                is_fork=bool(node.get("isFork")),
+            )
         )
     return stubs
 
@@ -130,25 +129,11 @@ def list_repositories(viewer: dict[str, Any] | None = None) -> dict[str, Any]:
     if viewer is None:
         viewer = gh.ensure_authenticated()
     login = viewer["login"]
-    node_id = viewer.get("node_id")
-    if not node_id:
-        # REST user may lack node_id on older responses; fetch via GraphQL
-        data = gh.gh_graphql("query { viewer { login id } }")
-        node_id = (data.get("viewer") or {}).get("id")
     by_name = _fetch_affiliated_repos(login)
-    for stub in _fetch_contributed_repos(node_id or ""):
+    for stub in _fetch_contributed_repos():
         name = stub["name_with_owner"]
         if name in by_name:
-            existing = by_name[name]
-            existing["role"] = cio.merge_roles(existing["role"], stub["role"])
-            if not existing.get("description") and stub.get("description"):
-                existing["description"] = stub["description"]
-            if not existing.get("primary_language") and stub.get("primary_language"):
-                existing["primary_language"] = stub["primary_language"]
-            if not existing.get("topics") and stub.get("topics"):
-                existing["topics"] = stub["topics"]
-            if existing.get("stars") is None and stub.get("stars") is not None:
-                existing["stars"] = stub["stars"]
+            cio.merge_repo_metadata(by_name[name], stub)
         else:
             by_name[name] = stub
     repos = sorted(by_name.values(), key=lambda r: r["name_with_owner"].lower())
@@ -166,11 +151,7 @@ def main() -> None:
         print(f"Error: {e}", file=sys.stderr)
         sys.exit(1)
     if args.json:
-        # Strip internal keys
-        repos = []
-        for r in result["repos"]:
-            clean = {k: v for k, v in r.items() if not k.startswith("_")}
-            repos.append(clean)
+        repos = [cio.strip_private(r) for r in result["repos"]]
         print(
             json.dumps(
                 {"viewer_login": result["viewer"].get("login"), "repos": repos},

@@ -70,6 +70,15 @@ def _parse_docx(path: Path) -> str:
             "Word parsing requires python-docx. Install with: pip install python-docx"
         ) from e
 
+    def _row_cell_texts(row) -> list[str]:
+        texts = [cell.text for cell in row.cells]
+        deduped: list[str] = []
+        for text in texts:
+            if deduped and text == deduped[-1]:
+                continue
+            deduped.append(text)
+        return deduped
+
     doc = Document(str(path))
     lines = []
     for child in doc.element.body.iterchildren():
@@ -77,7 +86,7 @@ def _parse_docx(path: Path) -> str:
             lines.append(Paragraph(child, doc).text)
         elif child.tag == qn("w:tbl"):
             for row in Table(child, doc).rows:
-                lines.append("\t".join(cell.text for cell in row.cells))
+                lines.append("\t".join(_row_cell_texts(row)))
     return "\n".join(line for line in lines if line.strip())
 
 
