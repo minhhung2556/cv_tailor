@@ -354,14 +354,14 @@ class CompileCvTests(unittest.TestCase):
             expected_pdf.write_bytes(b"%PDF-1.4\n")
 
             def fake_run(cmd, **kwargs):
-                self.assertEqual(cmd[-1], str(expected_pdf))
+                self.assertEqual(Path(cmd[-1]).resolve(), expected_pdf.resolve())
                 return mock.Mock(returncode=0, stdout="", stderr="")
 
             with mock.patch.object(compile_cv.cv_io, "find_workspace_root", return_value=workspace):
                 with mock.patch.object(compile_cv.cv_io, "stage_harvard_template_next_to"):
                     with mock.patch.object(compile_cv.subprocess, "run", side_effect=fake_run):
                         result = compile_cv.compile_cv(str(typ))
-            self.assertEqual(result, str(expected_pdf))
+            self.assertEqual(Path(result).resolve(), expected_pdf.resolve())
 
     def test_compile_cv_typst_root_when_typ_outside_workspace(self):
         with tempfile.TemporaryDirectory() as tmp:
