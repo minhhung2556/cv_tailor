@@ -1,7 +1,9 @@
 import importlib.util
 import json
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 GH_SCRIPTS = REPO_ROOT / "skills" / "github-contributions" / "scripts"
@@ -16,6 +18,7 @@ def _load(name: str, filename: str):
 
 
 cio = _load("contributions_io", "contributions_io.py")
+gh = _load("github_api", "github_api.py")
 
 
 def _sample_record(**overrides):
@@ -50,31 +53,112 @@ class RecordShapeTests(unittest.TestCase):
 class ShouldIncludeTests(unittest.TestCase):
     def test_includes_with_description(self):
         self.assertTrue(
-            cio.should_include_repo(
-                _sample_record(description="x", commit_count=0), is_fork=True
-            )
+            cio.should_include_repo(_sample_record(description="x", commit_count=0))
         )
 
     def test_includes_with_commits_only(self):
         self.assertTrue(
-            cio.should_include_repo(
-                _sample_record(description=None, commit_count=3), is_fork=False
-            )
+            cio.should_include_repo(_sample_record(description=None, commit_count=3))
         )
 
-    def test_skips_empty_fork(self):
+    def test_skips_empty_repo(self):
         self.assertFalse(
-            cio.should_include_repo(
-                _sample_record(description=None, commit_count=0), is_fork=True
-            )
+            cio.should_include_repo(_sample_record(description=None, commit_count=0))
         )
 
-    def test_skips_empty_non_fork(self):
-        self.assertFalse(
-            cio.should_include_repo(
-                _sample_record(description=None, commit_count=0), is_fork=False
-            )
+
+class RepoStubMergeTests(unittest.TestCase):
+    def test_repo_stub_sets_internal_fork_flag(self):
+        stub = cio.repo_stub(
+            "o/r",
+            "https://github.com/o/r",
+            private=False,
+            role=cio.ROLE_OWNER,
+            is_fork=True,
         )
+        self.assertEqual(stub["_fork"], True)
+        self.assertEqual(stub["topics"], [])
+
+    def test_merge_repo_metadata_fills_empty_fields(self):
+        existing = cio.repo_stub(
+            "o/r",
+            "https://github.com/o/r",
+            private=False,
+            role=cio.ROLE_OWNER,
+            description=None,
+            stars=None,
+        )
+        incoming = cio.repo_stub(
+            "o/r",
+            "https://github.com/o/r",
+            private=False,
+            role=cio.ROLE_CONTRIBUTOR,
+            description="from contrib",
+            primary_language="Go",
+            topics=["cli"],
+            stars=3,
+        )
+        cio.merge_repo_metadata(existing, incoming)
+        self.assertEqual(existing["role"], cio.ROLE_OWNER)
+        self.assertEqual(existing["description"], "from contrib")
+        self.assertEqual(existing["primary_language"], "Go")
+        self.assertEqual(existing["topics"], ["cli"])
+        self.assertEqual(existing["stars"], 3)
+
+
+class ViewerNodeIdTests(unittest.TestCase):
+    def test_uses_rest_node_id(self):
+        self.assertEqual(gh.viewer_node_id({"node_id": "N_rest"}), "N_rest")
+
+    def test_fetches_when_missing(self):
+        with mock.patch.object(
+            gh, "gh_graphql", return_value={"viewer": {"id": "N_gql"}}
+        ):
+            self.assertEqual(gh.viewer_node_id({"login": "dev"}), "N_gql")
+
+
+class GhApiPaginatedTests(unittest.TestCase):
+    def test_merges_list_pages_and_singleton_chunks(self):
+        raw = '[{"id": 1}]\n{"id": 2}\n'
+        with mock.patch.object(gh, "_run_gh", return_value=raw):
+            items = gh.gh_api_paginated("user/repos")
+        self.assertEqual(items, [{"id": 1}, {"id": 2}])
+
+
+class GraphqlPaginatedTests(unittest.TestCase):
+    _QUERY = "query($first: Int!, $after: String) { conn { nodes pageInfo } }"
+    _PATH = ["conn"]
+
+    def test_after_null_first_page_then_cursor_with_quote(self):
+        calls: list[dict] = []
+
+        def fake_graphql(_query, variables=None):
+            calls.append(dict(variables or {}))
+            if len(calls) == 1:
+                return {
+                    "conn": {
+                        "nodes": [{"n": 1}],
+                        "pageInfo": {
+                            "hasNextPage": True,
+                            "endCursor": 'end"cursor',
+                        },
+                    }
+                }
+            return {
+                "conn": {
+                    "nodes": [{"n": 2}],
+                    "pageInfo": {"hasNextPage": False, "endCursor": None},
+                }
+            }
+
+        with mock.patch.object(gh, "gh_graphql", side_effect=fake_graphql):
+            nodes = gh.gh_graphql_paginated(
+                self._QUERY, self._PATH, page_size=50, max_pages=5
+            )
+        self.assertEqual(len(nodes), 2)
+        self.assertIsNone(calls[0]["after"])
+        self.assertEqual(calls[0]["first"], 50)
+        self.assertEqual(calls[1]["after"], 'end"cursor')
 
 
 class TypstSnippetTests(unittest.TestCase):
@@ -98,6 +182,32 @@ class TypstSnippetTests(unittest.TestCase):
             cio.repo_name_from_typst_company("acme/widget (https://github.com/acme/widget)"),
             "acme/widget",
         )
+
+    def test_typst_keeps_unicode_and_escapes_specials(self):
+        rec = _sample_record(
+            description='Tiếng "Việt"\nsecond line',
+            primary_language=None,
+            topics=[],
+            commit_count=0,
+        )
+        typst = cio.format_typst_cv_experience(rec)
+        self.assertIn("Tiếng", typst)
+        self.assertIn('\\"', typst)
+        self.assertIn("\\n", typst)
+        self.assertNotIn("\\u", typst)
+
+
+class WorkspaceRootTests(unittest.TestCase):
+    def test_ignores_parent_with_only_empty_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            parent = base / "parent"
+            workspace = base / "workspace"
+            (parent / "assets").mkdir(parents=True)
+            (workspace / "assets").mkdir(parents=True)
+            (workspace / "assets" / "cv_base.typ").write_text("cv\n", encoding="utf-8")
+            root = cio.find_workspace_root(workspace)
+            self.assertEqual(root.resolve(), workspace.resolve())
 
 
 class BuildPayloadTests(unittest.TestCase):

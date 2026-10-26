@@ -43,11 +43,19 @@ def compile_cv(typ_path: str, output_path: str | None = None) -> str:
 
     cv_io.stage_harvard_template_next_to(typ_file, skill_root)
 
+    typ_resolved = typ_file.resolve()
+    workspace_resolved = workspace.resolve()
+    try:
+        typ_resolved.relative_to(workspace_resolved)
+        typst_root = workspace_resolved
+    except ValueError:
+        typst_root = typ_resolved.parent
+
     cmd = [
         "typst",
         "compile",
         "--root",
-        str(workspace),
+        str(typst_root),
         str(typ_file),
         output_path,
     ]
