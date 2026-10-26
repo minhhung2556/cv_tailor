@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve cv_tailor.
+Thanks for helping improve CV Tailor.
 
 ## Getting started
 
