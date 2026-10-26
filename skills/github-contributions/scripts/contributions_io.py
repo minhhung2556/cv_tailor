@@ -94,6 +94,41 @@ def empty_repo_record(name_with_owner: str, url: str, *, private: bool, role: st
     }
 
 
+MERGE_FILL_KEYS = ("description", "primary_language", "topics", "stars")
+
+
+def repo_stub(
+    name_with_owner: str,
+    url: str,
+    *,
+    private: bool,
+    role: str,
+    description: Any = None,
+    primary_language: Any = None,
+    topics: list[Any] | None = None,
+    stars: Any = None,
+    is_fork: bool = False,
+) -> dict[str, Any]:
+    return {
+        **empty_repo_record(name_with_owner, url, private=private, role=role),
+        "description": description,
+        "primary_language": primary_language,
+        "topics": list(topics or []),
+        "stars": stars,
+        "_fork": is_fork,
+    }
+
+
+def merge_repo_metadata(existing: dict[str, Any], stub: dict[str, Any]) -> None:
+    existing["role"] = merge_roles(existing["role"], stub["role"])
+    for key in MERGE_FILL_KEYS:
+        if key == "stars":
+            if existing.get(key) is None and stub.get(key) is not None:
+                existing[key] = stub[key]
+        elif not existing.get(key) and stub.get(key):
+            existing[key] = stub[key]
+
+
 def normalize_repo_record(record: dict[str, Any]) -> dict[str, Any]:
     out: dict[str, Any] = {}
     for key in REPO_RECORD_KEYS:
@@ -115,7 +150,7 @@ def merge_roles(existing: str, new: str) -> str:
     return existing
 
 
-def should_include_repo(record: dict[str, Any], *, is_fork: bool = False) -> bool:
+def should_include_repo(record: dict[str, Any]) -> bool:
     """Include repos with a description or at least one authored commit; skip the rest."""
     description = (record.get("description") or "").strip()
     commit_count = record.get("commit_count")

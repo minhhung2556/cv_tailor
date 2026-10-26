@@ -65,9 +65,9 @@ def _activity_query_chunk(
 def _oldest_commit_iso(owner: str, name: str, author_login: str) -> str | None:
     """Oldest authored commit on the default listing (author filter, page 1 is newest)."""
     path = f"repos/{owner}/{name}/commits?author={author_login}&per_page=1"
-    raw = gh._run_gh(["api", "-i", "--method", "GET", path])
+    headers, body = gh.gh_api_get_with_headers(path)
     last_page = 1
-    for line in raw.splitlines():
+    for line in headers.splitlines():
         if line.lower().startswith("link:"):
             for part in line.split(","):
                 if 'rel="last"' in part:
@@ -82,8 +82,8 @@ def _oldest_commit_iso(owner: str, name: str, author_login: str) -> str | None:
                                 break
                         if digits:
                             last_page = int("".join(digits))
-    body_path = path if last_page == 1 else f"{path}&page={last_page}"
-    body = gh._run_gh(["api", "--method", "GET", body_path])
+    if last_page != 1:
+        _, body = gh.gh_api_get_with_headers(f"{path}&page={last_page}")
     commits = json.loads(body)
     if isinstance(commits, list) and commits:
         commit = commits[-1].get("commit") or {}
@@ -143,14 +143,11 @@ def enrich_repos_with_activity(
     repos: list[dict[str, Any]],
     viewer: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    node_id = viewer.get("node_id")
-    if not node_id:
-        data = gh.gh_graphql("query { viewer { id login } }")
-        node_id = (data.get("viewer") or {}).get("id")
+    node_id = gh.viewer_node_id(viewer)
     names = [r["name_with_owner"] for r in repos]
     activity = fetch_activity_for_repos(
         names,
-        node_id or "",
+        node_id,
         viewer.get("login") or "",
     )
     enriched: list[dict[str, Any]] = []

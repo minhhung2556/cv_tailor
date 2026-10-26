@@ -50,7 +50,7 @@ Each repo record includes: `name_with_owner`, `url`, `private`, `description`, `
 
 **Scope:** Repositories from affiliations (including private) plus `repositoriesContributedTo` with commit contributions. Metadata only; no clone and no file contents.
 
-**Filtering:** By default, repos with a non-empty description or `commit_count > 0` are kept. Empty forks with no viewer commits and no description are skipped. Use `--include-all` on `collect_contributions.py` to retain everything.
+**Filtering:** By default, repos with a non-empty description or `commit_count > 0` are kept. Repos with no description and no authored commits are skipped. Use `--include-all` on `collect_contributions.py` to retain everything.
 
 ## Step 3: Merge into `assets/cv_base.typ`
 

@@ -88,6 +88,30 @@ def ensure_authenticated() -> dict[str, Any]:
     return user
 
 
+def viewer_node_id(viewer: dict[str, Any]) -> str:
+    """Return the viewer GraphQL node id (REST ``node_id`` or GraphQL ``viewer.id``)."""
+    node_id = viewer.get("node_id")
+    if node_id:
+        return str(node_id)
+    data = gh_graphql("query { viewer { id } }")
+    node_id = (data.get("viewer") or {}).get("id")
+    if not node_id:
+        raise GhError("Could not resolve viewer GraphQL id")
+    return str(node_id)
+
+
+def gh_api_get_with_headers(path: str) -> tuple[str, str]:
+    """Run ``gh api -i`` and return ``(raw_headers_and_status, response_body)``."""
+    raw = _run_gh(["api", "-i", "--method", "GET", path])
+    parts = raw.split("\r\n\r\n", 1)
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    parts = raw.split("\n\n", 1)
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    return "", raw.strip()
+
+
 def gh_api_paginated(path: str, *, params: dict[str, str] | None = None) -> list[Any]:
     """Paginate a GitHub REST endpoint (gh api --paginate).
 
@@ -137,35 +161,24 @@ def gh_graphql(query: str, variables: dict[str, Any] | None = None) -> dict[str,
     return data.get("data") or {}
 
 
-def _escape_graphql_cursor(cursor: str) -> str:
-    return cursor.replace("\\", "\\\\").replace('"', '\\"')
-
-
 def gh_graphql_paginated(
-    build_query: str,
+    query: str,
     connection_path: list[str],
     *,
     page_size: int = 100,
     max_pages: int = 50,
 ) -> list[dict[str, Any]]:
     """
-    Walk a GraphQL connection using ``first`` / ``after``.
+    Walk a GraphQL connection using variables ``$first`` and ``$after``.
 
-    ``build_query`` must contain placeholders ``__FIRST__`` and ``__AFTER__``
-    and return a connection with ``nodes`` and ``pageInfo``.
+    ``query`` must declare ``$first: Int!`` and ``$after: String`` and return a
+    connection with ``nodes`` and ``pageInfo``.
     """
     nodes: list[dict[str, Any]] = []
     cursor: str | None = None
     for _ in range(max_pages):
-        if cursor:
-            escaped = _escape_graphql_cursor(cursor)
-            after_part = f', after: "{escaped}"'
-        else:
-            after_part = ""
-        query = build_query.replace("__FIRST__", str(page_size)).replace(
-            "__AFTER__", after_part
-        )
-        data = gh_graphql(query)
+        variables: dict[str, Any] = {"first": page_size, "after": cursor}
+        data = gh_graphql(query, variables)
         conn: Any = data
         try:
             for key in connection_path:
