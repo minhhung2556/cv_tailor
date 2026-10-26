@@ -528,6 +528,27 @@ class CursorPluginManifestTests(unittest.TestCase):
         self.assertIn("name: cv-tailor", skill_text.split("---", 2)[1])
 
 
+class HarvardLayoutDriftTests(unittest.TestCase):
+    """Typst template sizes must stay aligned with build_docx_cv.py constants."""
+
+    TYPST_TOKENS = (
+        "9.5pt",
+        "17pt",
+        "10.5pt",
+        "8.5pt",
+        "10pt",
+        "1.5cm",
+        "1.4cm",
+        "#111111",
+        "#333333",
+    )
+
+    def test_harvard_typst_contains_docx_layout_tokens(self):
+        text = HARVARD.read_text(encoding="utf-8")
+        for token in self.TYPST_TOKENS:
+            self.assertIn(token, text, msg=f"missing {token} in harvard_cv.typ")
+
+
 class ClaudePluginManifestTests(unittest.TestCase):
     PLUGIN_JSON = REPO_ROOT / ".claude-plugin" / "plugin.json"
     MARKETPLACE_JSON = REPO_ROOT / ".claude-plugin" / "marketplace.json"
