@@ -1,5 +1,7 @@
 # CV Tailor
 
+[![skills.sh](https://skills.sh/b/minhhung2556/cv_tailor)](https://skills.sh/minhhung2556/cv_tailor)
+
 Tailor your base CV to a job description, compile a Harvard-style PDF or Word file, and optionally draft a one-page English cover letter. The agent rephrases and reorders only what is already in your files: the base CV, `assets/github_contributions.json` when present, and verified pages from Reference Links in the extract. It does not invent employers, dates, or metrics. Personal data stays under `assets/` and `output/` on your machine (both gitignored). Source and clone path: GitHub repository `minhhung2556/cv_tailor`.
 
 Agent workflows live in [skills/](skills/):
@@ -46,6 +48,7 @@ Global install for Cursor and Claude Code:
 
 ```powershell
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor
 ```
 
 That installs all four skills (`cv-tailor`, `github-contributions`, `cv-section-audit`, `cover-letter`) for Cursor and Claude Code. To install one skill only:
@@ -55,7 +58,13 @@ npx skills add minhhung2556/cv_tailor --skill cv-tailor -a cursor -a claude-code
 npx skills add minhhung2556/cv_tailor --skill github-contributions -a cursor -a claude-code -g -y
 npx skills add minhhung2556/cv_tailor --skill cv-section-audit -a cursor -a claude-code -g -y
 npx skills add minhhung2556/cv_tailor --skill cover-letter -a cursor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor cv-tailor
+gh skill install minhhung2556/cv_tailor github-contributions
+gh skill install minhhung2556/cv_tailor cv-section-audit
+gh skill install minhhung2556/cv_tailor cover-letter
 ```
+
+Browse installs and skill pages on [skills.sh/minhhung2556/cv_tailor](https://skills.sh/minhhung2556/cv_tailor).
 
 **Cursor:** import `https://github.com/minhhung2556/cv_tailor` from Plugins (manifest: [.cursor-plugin/marketplace.json](.cursor-plugin/marketplace.json)).
 

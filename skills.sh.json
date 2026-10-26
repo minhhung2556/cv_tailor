@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "CV",
+      "description": "Tailor a CV, audit sections, draft a cover letter, and pull GitHub evidence.",
+      "skills": [
+        "cv-tailor",
+        "cv-section-audit",
+        "cover-letter",
+        "github-contributions"
+      ]
+    }
+  ]
+}
