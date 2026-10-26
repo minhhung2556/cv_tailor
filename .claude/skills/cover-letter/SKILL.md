@@ -66,8 +66,8 @@ Use the candidate name from the extract for `<Candidate>`. Sanitize `<Company>` 
 2. Session date (today's date in the conversation)
 3. Company and role (from the JD)
 4. Greeting: named contact only if the JD names one; otherwise `Dear Hiring Team,`
-5. Opening: role and company, plus one evidenced reason this candidate fits
-6. Two short body paragraphs: two or three proofs from the extract, tied to JD requirements. One proof per sentence. A result clause may sit in the same sentence. Do not restate the CV bullet list.
+5. Opening: state the role and company from the reader’s need (what the hire must deliver), then one evidenced reason this candidate fits. Do not open with a generic enthusiasm line.
+6. Two short body paragraphs: two or three proofs from the extract, tied to JD requirements. One proof per sentence. Each proof uses an action verb and a result or scope from the extract. A result clause may sit in the same sentence. Do not restate the CV bullet list. Vary sentence openings; do not start every sentence with `I`.
 7. Closing paragraph and sign-off with the candidate name
 
 ### Step 5: Report
@@ -84,6 +84,11 @@ Tell the user the output path. Summarize which JD requirements you addressed and
 - Date ranges and numeric spans may use an en dash (for example `April 2022 – Present`, `20–50%`).
 - When a sentence would use a dash, split into two sentences, or use a comma, colon, or parentheses.
 - Before finalizing, scan letter prose for U+2014, U+2013, and U+2015 in clause positions and rewrite any hit (except allowed date or range fields).
+
+**Reader-first proofs**
+
+- Put yourself in the reader’s shoes: each paragraph should show readiness for this role, not a biography.
+- Numbers in the letter only when the extract or verified Reference Links already have them.
 
 **Avoid AI and JD echo**
 
