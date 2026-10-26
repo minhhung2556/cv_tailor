@@ -1,6 +1,7 @@
 ---
 name: github-contributions
 description: Collect GitHub repository contributions (public and private) via the authenticated gh CLI, write assets/github_contributions.json, and merge Projects entries into assets/cv_base.typ. Use when syncing GitHub activity into a CV, refreshing open-source evidence, or researching the user's repositories for resume facts.
+license: MIT
 ---
 
 # GitHub Contributions into the CV
@@ -75,6 +76,7 @@ After merging Projects, run [cv-tailor](../cv-tailor/SKILL.md) to tune against a
 
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor github-contributions
 ```
 
 More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).

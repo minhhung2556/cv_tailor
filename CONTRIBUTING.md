@@ -12,13 +12,17 @@ Thanks for helping improve CV Tailor.
    ```
 
 3. Install [Typst](https://typst.app/) if you need to compile PDFs (`typst` on `PATH`).
-4. After clone, recreate agent skill junctions:
+4. Install the published skills globally, or link a local clone:
 
    ```powershell
+   gh skill install minhhung2556/cv_tailor
+   npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
    python skills/cv-tailor/scripts/link_agent_skill.py
    ```
 
-   Use `--force` if a real directory already exists at an agent skill path.
+   Use `--force` on `link_agent_skill.py` if a real directory already exists at an agent skill path.
+
+   After changes to `skills/` land on `main`, cut a release with `gh skill publish --tag <version>` so `gh skill` search and install pick up the new tag.
 
 ## Making changes
 

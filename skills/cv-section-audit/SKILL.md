@@ -7,6 +7,7 @@ description: >-
   Use when asked to audit a CV, separate product copy from the tech stack,
   remove duplicated claims across summary, competencies, and skills, or clean
   assets/cv_base.typ before tailoring.
+license: MIT
 ---
 
 # CV section audit
@@ -55,6 +56,7 @@ Examples: a CI line keeps "publishes dependency vulnerability reports"; `Azure P
 
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor cv-section-audit
 ```
 
 More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).

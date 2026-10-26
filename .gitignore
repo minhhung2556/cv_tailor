@@ -85,9 +85,5 @@ htmlcov/
 # .python-version
 assets/
 output/
-.agents/skills/cv-tailor
-.agents/skills/github-contributions
-.agents/skills/cv-section-audit
-.claude/skills/cv-tailor
-.claude/skills/github-contributions
-.claude/skills/cv-section-audit
+.agents/skills/
+.claude/skills/

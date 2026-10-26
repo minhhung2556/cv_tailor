@@ -4,6 +4,7 @@ description: >-
   Write a one-page English cover letter from assets/cv_base.typ and a job
   description in assets/jd/, saved as Markdown under output/. Use when asked
   for a cover letter, application letter, or a letter for a job in assets/jd.
+license: MIT
 ---
 
 # Cover letter
@@ -106,6 +107,7 @@ Tell the user the output path. Summarize which JD requirements you addressed and
 
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor cover-letter
 ```
 
 More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).

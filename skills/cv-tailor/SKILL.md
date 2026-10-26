@@ -1,6 +1,7 @@
 ---
 name: cv-tailor
 description: Tune and tailor candidate CVs against Job Descriptions (JD) in assets/jd to generate Harvard-style PDFs in /output. Load this skill when asked to tune a CV, match a resume to a job description, update a CV for a target role, or process job descriptions from assets/jd.
+license: MIT
 ---
 
 # CV Tailor Skill
@@ -178,7 +179,11 @@ Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
 npx skills add minhhung2556/cv_tailor -a claude-code -g -y
+gh skill install minhhung2556/cv_tailor
+gh skill install minhhung2556/cv_tailor cv-tailor
 ```
+
+The second `gh skill install` line installs only this skill. Repo page: https://skills.sh/minhhung2556/cv_tailor
 
 From a local clone, pass the repository path. Use an absolute path, `.`, or `..`. A bare folder name is treated as a GitHub repository, not a local directory.
 ```bash
