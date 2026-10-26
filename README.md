@@ -48,6 +48,15 @@ Global install for Cursor and Claude Code:
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
 ```
 
+That installs all four skills (`cv-tailor`, `github-contributions`, `cv-section-audit`, `cover-letter`) for Cursor and Claude Code. To install one skill only:
+
+```powershell
+npx skills add minhhung2556/cv_tailor --skill cv-tailor -a cursor -a claude-code -g -y
+npx skills add minhhung2556/cv_tailor --skill github-contributions -a cursor -a claude-code -g -y
+npx skills add minhhung2556/cv_tailor --skill cv-section-audit -a cursor -a claude-code -g -y
+npx skills add minhhung2556/cv_tailor --skill cover-letter -a cursor -a claude-code -g -y
+```
+
 **Cursor:** import `https://github.com/minhhung2556/cv_tailor` from Plugins (manifest: [.cursor-plugin/marketplace.json](.cursor-plugin/marketplace.json)).
 
 **Claude Code:** `/plugin marketplace add minhhung2556/cv_tailor` then `/plugin install cv-tailor@cv-tailor`.
