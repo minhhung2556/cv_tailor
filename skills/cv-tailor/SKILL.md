@@ -66,12 +66,30 @@ Before rewriting a base CV whose bullets mix product with libraries, or whose su
 
 ### Writing (CV prose)
 
-Governs Professional Summary, Core Competencies, and experience bullets only. Does not change chat style, scripts, or Harvard Typst layout.
+Governs Professional Summary, Core Competencies, and experience bullets only. Does not change chat style, scripts, or Harvard Typst layout. Aligns with [Harvard FAS resume guidance](https://careerservices.fas.harvard.edu/resources/create-a-strong-resume/) (specific, active, fact-based, skim-friendly) and common CV best practices (short document, honest tailoring, personal profile up front).
 
 **Truth and structure**
 
 - Facts only from the extract and verified Reference Link pages. Reframe order and emphasis. Do not invent scope, titles, or metrics.
-- One claim per bullet. Lead with a verb and a concrete result (what shipped, what changed, a number only if the base CV has one).
+- One claim per bullet. Each experience bullet is one short sentence: **action verb**, then the **product or decision**, then an **evidenced result** (what shipped, what changed). Use a number only when the base CV or verified Reference Links already have it. When they do not, qualify with scope already in the extract (market, team size, users, what changed). Do not invent a percentage or statistic to sound impressive.
+- **Skim-first.** Recruiters scan quickly. Put the bullets most relevant to the JD first within each role. Experience and Education stay reverse chronological.
+- **Voice.** Active voice. No `I`, `we`, `my`, or `our` in the CV. No narrative paragraphs under a role. Do not start a bullet with a date; dates stay in the experience header. Past tense for past roles; present tense only for the current role.
+- **Professional Summary (personal profile).** Three to four lines: years, industries, and the strongest evidenced results for this JD. No tool list (see [cv-section-audit](../cv-section-audit/SKILL.md)). If a sentence could describe any applicant for the role, replace it with a fact from the extract. Edit the candidate record; do not author a generic profile.
+- **Length.** Target at most two pages in the compiled PDF. Keep every evidenced employer, product, credential, and education line. Shorten older roles to fewer bullets before dropping anything. If the PDF is still over two pages, say so in the Step 6 report instead of dropping evidence.
+- **Gaps.** Do not invent a job or a “career break” sentence. If a credential, product, or side project in the extract falls between roles, place that entry so the timeline is readable. If nothing in the extract explains a gap, leave the dates as they are.
+
+**Verbs**
+
+- Prefer plain verbs from the candidate record: shipped, led, cut, fixed, built.
+- When the extract supports it, specific Harvard-style verbs are fine: designed, engineered, launched, reduced, mentored, negotiated, documented, coordinated, improved.
+- Do not use spearheaded, leveraged, utilized, or other banned stock lines below even if they appear on verb lists elsewhere.
+
+**Language pass (before compile)**
+
+- Spelling and grammar. No slang or colloquialisms.
+- Spell out uncommon non-technical abbreviations. Keep JD keywords and standard technical abbreviations (`API`, `CI/CD`, `iOS`).
+- No photo, age, gender, or “references available” line. **Reference Links** are portfolio or work URLs, not character references.
+- Be consistent in formatting and section emphasis. Do not abbreviate employer names in ways the extract does not use.
 
 **Plain prose (no dash pauses)**
 
@@ -154,7 +172,7 @@ python <skill-scripts>/docx_to_pdf.py "output/CV_<Candidate_Name>_<Company>_<Rol
 
 ### Install and agent discovery
 
-This repository ships three agent skills under `skills/`: `cv-tailor`, `github-contributions`, and `cv-section-audit`. Repo-level install commands below add all of them. `./skills/cv-tailor` installs only this skill.
+This repository ships four agent skills under `skills/`: `cv-tailor`, `cover-letter`, `github-contributions`, and `cv-section-audit`. Repo-level install commands below add all of them. `./skills/cv-tailor` installs only this skill.
 
 Install globally (GitHub shorthand). Use `-a cursor`, `-a claude-code`, or both:
 ```bash
@@ -193,8 +211,9 @@ python skills/cv-tailor/scripts/link_agent_skill.py
 Use `--force` only to replace a real directory at an agent skill path (not a junction).
 
 ### Step 6: Verify and Report Output
-1. Check that the PDF (and/or `.docx`) was written successfully (typically under `output/`). For the Typst route, note the page count from `compile_cv.py`.
+1. Check that the PDF (and/or `.docx`) was written successfully (typically under `output/`). For the Typst route, note the page count from `compile_cv.py`. If the count exceeds two pages, report that and what was shortened (if anything).
 2. Report the generated file location to the user, summarize key adjustments made to match the target JD, and include the JD keyword lists (used vs skipped). Confirm every employer, product, credential, skill category, and education entry from the extract appears in the tuned CV.
+3. A cover letter is a separate step via [cover-letter](../cover-letter/SKILL.md). Do not write one unless the user asks.
 
 > Environment notes:
 > - Dependencies: `pip install -r requirements.txt` (beautifulsoup4, pypdf, python-docx).

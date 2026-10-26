@@ -15,6 +15,7 @@ Usage:
 import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
@@ -24,6 +25,7 @@ if str(_SCRIPT_DIR) not in sys.path:
 import cv_io
 
 WD_EXPORT_FORMAT_PDF = 17
+LIBREOFFICE_TIMEOUT_SECONDS = 120
 
 
 def _convert_with_word(src: Path, dst: Path) -> bool:
@@ -32,16 +34,23 @@ def _convert_with_word(src: Path, dst: Path) -> bool:
     except ImportError:
         return False
 
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False
-    word.DisplayAlerts = 0
+    word = None
     try:
-        doc = word.Documents.Open(str(src), False, True)
-        doc.ExportAsFixedFormat(str(dst), WD_EXPORT_FORMAT_PDF)
+        word = win32com.client.DispatchEx("Word.Application")
+        word.Visible = False
+        word.DisplayAlerts = 0
+        doc = word.Documents.Open(str(src.resolve()), False, True)
+        doc.ExportAsFixedFormat(str(dst.resolve()), WD_EXPORT_FORMAT_PDF)
         doc.Close(False)
+        return dst.is_file()
+    except Exception:
+        return False
     finally:
-        word.Quit()
-    return dst.exists()
+        if word is not None:
+            try:
+                word.Quit()
+            except Exception:
+                pass
 
 
 def _convert_with_libreoffice(src: Path, dst: Path) -> bool:
@@ -49,29 +58,59 @@ def _convert_with_libreoffice(src: Path, dst: Path) -> bool:
     if not soffice:
         return False
 
-    subprocess.run(
-        [soffice, "--headless", "--convert-to", "pdf",
-         "--outdir", str(dst.parent), str(src)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        proc = subprocess.run(
+            [soffice, "--headless", "--convert-to", "pdf",
+             "--outdir", str(dst.parent), str(src)],
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=LIBREOFFICE_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+    if proc.returncode != 0:
+        detail = (proc.stderr or proc.stdout or "").strip()
+        if detail:
+            print(detail, file=sys.stderr)
+        return False
+
     produced = dst.parent / (src.stem + ".pdf")
     if produced != dst and produced.exists():
         produced.replace(dst)
-    return dst.exists()
+    return dst.is_file()
 
 
 def docx_to_pdf(in_path: str, out_path: str) -> str:
-    src = Path(in_path)
+    src = cv_io.resolve_user_path(in_path)
     if not src.exists():
         raise FileNotFoundError(f"Word file not found: {in_path}")
-    dst = Path(out_path)
+    dst = cv_io.resolve_user_path(out_path)
     dst.parent.mkdir(parents=True, exist_ok=True)
 
-    for convert in (_convert_with_word, _convert_with_libreoffice):
-        if convert(src, dst):
-            return str(dst)
+    with tempfile.NamedTemporaryFile(
+        suffix=".pdf",
+        dir=dst.parent,
+        delete=False,
+    ) as tmp:
+        temp_pdf = Path(tmp.name)
+
+    try:
+        for convert in (_convert_with_word, _convert_with_libreoffice):
+            if temp_pdf.exists():
+                temp_pdf.unlink(missing_ok=True)
+            try:
+                ok = convert(src, temp_pdf)
+            except Exception:
+                ok = False
+            if ok:
+                temp_pdf.replace(dst)
+                return str(dst)
+    finally:
+        temp_pdf.unlink(missing_ok=True)
 
     raise RuntimeError(
         "No docx->pdf converter available. Install Microsoft Word + pywin32 "

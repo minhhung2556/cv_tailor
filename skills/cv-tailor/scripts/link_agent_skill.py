@@ -41,7 +41,7 @@ def _is_reparse_point(path: Path) -> bool:
 
 
 def _remove_reparse_point(agent: Path) -> None:
-    if agent.is_dir():
+    if sys.platform == "win32" and agent.is_dir() and not agent.is_symlink():
         agent.rmdir()
     else:
         agent.unlink(missing_ok=True)

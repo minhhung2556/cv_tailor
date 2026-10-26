@@ -29,7 +29,7 @@ Leave title, short contracts, missing side-project dates, and education timing u
 
 **Core Competencies.** Practices only: governance, hiring, release standards, cross-market delivery, vendor and cost decisions, mentoring. No product names, no feature lists, no libraries. Labels that restate the summary or name a tool move out.
 
-**Experience and Side Projects.** One claim per bullet. Lead with the product or the decision. Keep markets, features, team scale, and results already in the file. Do not name libraries, CLIs, model runtimes, or package names in the bullet.
+**Experience and Side Projects.** One claim per bullet. Each bullet is one short sentence: action verb, then the product or decision, then an evidenced result or scope (number only if already in the file; otherwise market, team, or what changed). Active voice; no `I`, `we`, `my`, or `our`. Do not start a bullet with a date. Keep markets, features, team scale, and results already in the file. Do not name libraries, CLIs, model runtimes, or package names in the bullet. Exception: **Projects** entries merged from `assets/github_contributions.json` may keep the `Stack: …` line (language and topics from that JSON) on that `#cv_experience` only.
 
 **Technical Skills.** The only place a library or platform name appears. Group by use: mobile, APIs and web, delivery, AI, security. Fold design tools (`UML`, `Figma`, `OpenAPI`) into the API or delivery line. Drop a category that only repeats product features already stated in Experience (payments flows, super-app feature lists). Every tool removed from a bullet must land here. Do not drop a skill category that still has evidenced tools; rename or merge it.
 
@@ -53,15 +53,8 @@ Examples: a CI line keeps "publishes dependency vulnerability reports"; `Azure P
 
 ## Install
 
-Install with the other CV skills from the repository root (not from `skills/cv-tailor` alone):
-
 ```bash
 npx skills add minhhung2556/cv_tailor -a cursor -a claude-code -g -y
-npx skills add . -a cursor -a claude-code -g -y
 ```
 
-After clone, recreate in-repo junctions for every skill:
-
-```bash
-python skills/cv-tailor/scripts/link_agent_skill.py
-```
+More install paths and junction setup: [cv-tailor](../cv-tailor/SKILL.md) (Install and agent discovery).
